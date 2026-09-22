@@ -207,6 +207,7 @@ export const MECH_TEAM_PERKS = makeTeamPerks({
         display_name: 'Granted Suppressive Fire',
         description: 'This HE-V has the Suppressive Fire trait.',
         granted_unit_traits: [UNIT_TRAITS.TRAIT_SUPPRESSIVE_FIRE],
+        visible_on_card: true,
     },
     [TEAM_PERK.HOMING]: {
         display_name: 'Homing',
