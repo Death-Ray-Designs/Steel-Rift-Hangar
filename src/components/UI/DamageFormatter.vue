@@ -21,8 +21,7 @@ const {
 <template>
   <div v-if="meleeBaseDamage" class="text-end">
     <small class="fw-light">
-      {{ meleeBaseDamage }}+{{ meleeModifierDamage }}<span
-        v-if="combatShieldDamagePenalty">-{{ combatShieldDamagePenalty }}</span> =
+      {{ meleeBaseDamage }}+{{ meleeModifierDamage }} =
     </small>
     {{ meleeTotalDamage }}
   </div>

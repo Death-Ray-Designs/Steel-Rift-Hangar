@@ -583,7 +583,7 @@ export const useMechStore = defineScopeableStore('mech', ({ scope }: { scope: st
                 combat_shield_damage_penalty,
                 melee_base_damage,
                 melee_trait_damage,
-                melee_total_damage: Math.max(melee_base_damage + melee_trait_damage - combat_shield_damage_penalty, 0),
+                melee_total_damage: melee_base_damage + melee_trait_damage,
                 traits,
                 team_perks,
                 faction_perks,
