@@ -82,7 +82,7 @@ function addWeapon(id: MECH_WEAPON) {
             <format-number :val="item.cost" :invert-color="true" />
           </td>
           <td class="text-end">
-            {{ item.damage }}
+            {{ item.ranged_base_damage }}
           </td>
           <td class="text-end">
             <format-inches :value="item.range" />

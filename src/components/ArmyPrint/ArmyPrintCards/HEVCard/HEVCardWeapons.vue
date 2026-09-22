@@ -29,7 +29,7 @@ const weapons = computed(() => {
       range: null,
       range_modifier: 0,
       range_total: 0,
-      damage: null,
+      ranged_base_damage: null,
     } as unknown as MechWeaponAttachmentInfo;
 
     results.push(mineDroneWeapon as unknown as MechWeaponAttachmentInfo);
@@ -84,7 +84,9 @@ watch([hasUses, weapons], () => emit('contentChanged'), { flush: 'post' });
       </td>
       <td class="text-nowrap">
         <DamageFormatter
-          :damage="weapon.damage"
+          :ranged-base-damage="weapon.ranged_base_damage"
+          :ranged-total-damage="weapon.ranged_total_damage"
+          :combat-shield-damage-penalty="weapon.combat_shield_damage_penalty"
           :melee-base-damage="weapon.melee_base_damage"
           :melee-modifier-damage="weapon.melee_trait_damage"
           :melee-total-damage="weapon.melee_total_damage"

@@ -45,7 +45,9 @@ const sortedWeapons = computed(() => sortBy<BasicWeaponInfo>(weapons, ['display_
       </td>
       <td class="text-end text-nowrap">
         <DamageFormatter
-          :damage="weapon.damage"
+          :ranged-base-damage="weapon.damage"
+          :ranged-total-damage="weapon.damage"
+          :combat-shield-damage-penalty="0"
           :melee-base-damage="weapon.melee_base_damage"
           :melee-modifier-damage="weapon.melee_trait_damage"
           :melee-total-damage="weapon.melee_total_damage"

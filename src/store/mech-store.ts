@@ -17,7 +17,7 @@ import {
     type MechUpgrade,
 } from '../data/mech-upgrades';
 import { MECH_WEAPON, MECH_WEAPONS, MECH_WEAPONS_BY_TYPE, type MechWeaponInfo } from '../data/mech-weapons';
-import { MECH_SIZES, type MechSizeId, SIZE } from '../data/unit-sizes'
+import { MECH_SIZES, type MechSizeId, SIZE } from '../data/unit-sizes';
 import { UNIT_TYPE } from '../data/unit-types';
 import { UPGRADE_TRAIT, UPGRADE_TRAITS, upgradeTraitDisplayName, upgradeTraitInfo } from '../data/upgrade-traits';
 import { WEAPON_TRAIT, weaponTraitInfo } from '../data/weapon-traits';
@@ -35,7 +35,7 @@ import {
 } from '../types';
 import { useFactionStore } from './faction-store';
 import { dedupeById, deleteItemById, findBy, findById, findItemIndex, moveItem } from './helpers/collection-helper';
-import { type GrantedOrderCollection, makeGrantedOrderCollection, normalizeArmorUpgrades } from './helpers/helpers'
+import { type GrantedOrderCollection, makeGrantedOrderCollection, normalizeArmorUpgrades } from './helpers/helpers';
 import { useMechArmorStore } from './mech-armor-store';
 import { useTeamStore } from './team-store';
 
@@ -80,7 +80,7 @@ export const useMechStore = defineScopeableStore('mech', ({ scope }: { scope: st
             armor_mod_id = armor_mod_id ?? MECH_BODY_MOD.STANDARD;
             aux_armor_upgrade_id = aux_armor_upgrade_id ?? MECH_ARMOR_UPGRADE.NO_ARMOR_UPGRADE;
 
-            armor_upgrade_ids = normalizeArmorUpgrades(size_id, armor_upgrade_ids ?? [])
+            armor_upgrade_ids = normalizeArmorUpgrades(size_id, armor_upgrade_ids ?? []);
             mobility_id = mobility_id ?? MECH_MOBILITY.BI_PEDAL;
             preferred_team_id = teamStore.normalizePreferredTeamId(preferred_team_id ?? MECH_TEAM.GENERAL);
 
@@ -114,7 +114,7 @@ export const useMechStore = defineScopeableStore('mech', ({ scope }: { scope: st
             if (!mech) return;
 
             if (data.size_id) {
-                data.armor_upgrade_ids = normalizeArmorUpgrades(data.size_id, data.armor_upgrade_ids ?? mech.armor_upgrade_ids)
+                data.armor_upgrade_ids = normalizeArmorUpgrades(data.size_id, data.armor_upgrade_ids ?? mech.armor_upgrade_ids);
             }
             updateObject(mech, data, [
                 'name',
@@ -565,18 +565,25 @@ export const useMechStore = defineScopeableStore('mech', ({ scope }: { scope: st
                 melee_trait_damage = melee.X as number;
             }
 
+            const hasCombatShield = mech.upgrades.find(u => u.upgrade_id === MECH_UPGRADE.COMBAT_SHIELD);
+            let combat_shield_damage_penalty = 0;
+            if (hasCombatShield) {
+                combat_shield_damage_penalty = 1;
+            }
             const result: MechWeaponInfo = {
                 weapon_id: weaponId,
                 display_name,
-                damage,
+                ranged_base_damage: damage,
+                ranged_total_damage: damage ? Math.max(damage - combat_shield_damage_penalty, 0) : null,
                 slots,
                 cost,
                 range,
                 range_modifier,
                 range_total: (range || 0) + (range_modifier || 0),
+                combat_shield_damage_penalty,
                 melee_base_damage,
                 melee_trait_damage,
-                melee_total_damage: (melee_base_damage) + (melee_trait_damage),
+                melee_total_damage: Math.max(melee_base_damage + melee_trait_damage - combat_shield_damage_penalty, 0),
                 traits,
                 team_perks,
                 faction_perks,

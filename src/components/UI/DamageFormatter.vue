@@ -4,24 +4,36 @@ const {
   meleeTotalDamage,
   meleeModifierDamage,
   meleeBaseDamage,
-  damage,
+  rangedBaseDamage,
+  combatShieldDamagePenalty,
+  rangedTotalDamage,
   suffix = '',
 } = defineProps<{
   meleeBaseDamage?: number | null,
   meleeModifierDamage?: number,
   meleeTotalDamage?: number,
-  damage: number | null,
+  rangedBaseDamage: number | null,
+  rangedTotalDamage: number | null,
+  combatShieldDamagePenalty: number,
   suffix?: string
 }>();
 </script>
 <template>
   <div v-if="meleeBaseDamage" class="text-end">
     <small class="fw-light">
-      {{ meleeBaseDamage }}+{{ meleeModifierDamage }} =
+      {{ meleeBaseDamage }}+{{ meleeModifierDamage }}<span
+        v-if="combatShieldDamagePenalty">-{{ combatShieldDamagePenalty }}</span> =
     </small>
     {{ meleeTotalDamage }}
   </div>
+  <template v-else-if="rangedBaseDamage && combatShieldDamagePenalty">
+    <small class="fw-light">
+      {{ rangedBaseDamage }}-{{ combatShieldDamagePenalty }} =
+    </small>
+    {{ rangedTotalDamage }}
+    {{ suffix }}
+  </template>
   <template v-else>
-    {{ damage }}{{ suffix }}
+    {{ rangedTotalDamage }}{{ suffix }}
   </template>
 </template>
