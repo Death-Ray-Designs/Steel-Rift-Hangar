@@ -91,6 +91,7 @@ export const MECH_TEAM_PERKS = makeTeamPerks({
     [TEAM_PERK.EXTRA_CLUSTER_ROCKET_AMMO]: {
         display_name: 'Extra Cluster Rocket Ammo',
         description: 'Cluster Rockets gain +1 to their Limited Trait.',
+        value: 1
     },
     [TEAM_PERK.RECON_INITIATIVE]: {
         display_name: 'Recon Initiative',
