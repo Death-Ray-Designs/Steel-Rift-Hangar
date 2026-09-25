@@ -574,7 +574,7 @@ export const useMechStore = defineScopeableStore('mech', ({ scope }: { scope: st
                 weapon_id: weaponId,
                 display_name,
                 ranged_base_damage: damage,
-                ranged_total_damage: damage ? Math.max(damage - combat_shield_damage_penalty, 0) : null,
+                ranged_total_damage: damage ? Math.max(damage - combat_shield_damage_penalty, 1) : null,
                 slots,
                 cost,
                 range,
