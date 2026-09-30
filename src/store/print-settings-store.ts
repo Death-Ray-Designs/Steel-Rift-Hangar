@@ -33,7 +33,7 @@ export const usePrintSettingsStore = defineScopeableStore('print-settings', ({ s
 
         function $reset() {
             one_team_per_page.value = false;
-            include_army_name_on_cards.value = false;
+            include_army_name_on_cards.value = true;
             include_mine_drone_card.value = false;
             include_msoe_card.value = false;
             include_faction_perk_1_card.value = false;
