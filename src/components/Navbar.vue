@@ -1,8 +1,11 @@
 <script setup lang="ts">
-
 import logoSvg from '/steel-rift-logo.svg';
 import { BCollapse, BNavbarToggle } from 'bootstrap-vue-next';
 import BtnColorMode from './UI/BtnColorMode.vue';
+import { useRouteLayout } from '../composables/useRouteLayout';
+import { ROUTE_HOME, ROUTE_PLAY, ROUTE_PRINT } from '../router';
+
+const { isPlayLayout } = useRouteLayout();
 </script>
 <template>
   <nav class="navbar navbar-expand-lg navbar-dark">
@@ -13,14 +16,26 @@ import BtnColorMode from './UI/BtnColorMode.vue';
           <a class="navbar-brand" href="#">
             <img :src="logoSvg" height="25" class="logo" alt="Steel Rift: Hangar logo" />
           </a>
-          <div class="float-end">
+          <div class="float-end" v-if="!isPlayLayout">
             <BNavbarToggle target="nav-collapse" size="sm" />
             <BtnColorMode class="d-lg-none" />
           </div>
+
+          <template v-if="isPlayLayout">
+            <router-link
+                :to="{ name: ROUTE_HOME }"
+                class="btn btn-sm btn-default"
+                activeClass="active"
+            >
+              Exit
+            </router-link>
+
+          </template>
         </div>
 
+
         <div class="flex-lg-grow-1">
-          <BCollapse id="nav-collapse" is-nav>
+          <BCollapse id="nav-collapse" is-nav v-if="!isPlayLayout">
             <ul class="navbar-nav mb-2 me-auto mb-lg-0 px-lg-4 px-lg-0 mt-3 mt-lg-0">
               <li class="nav-item">
                 <a class="nav-link" href="https://www.steelrift.com/play">Get Started</a>
