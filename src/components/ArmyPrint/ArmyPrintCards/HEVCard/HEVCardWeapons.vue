@@ -113,7 +113,6 @@ function getUses(weapon: typeof weapons.value[number]) {
         </div>
         <BtnPlusMinus
           v-if="play && weapon.max_uses"
-          class="mt-1"
           @add="addUse(weapon)"
           @remove="removeUse(weapon)"
         />
