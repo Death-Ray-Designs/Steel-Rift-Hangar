@@ -86,7 +86,7 @@ export const useCardStore = defineScopeableStore('card-store', ({ scope }: { sco
         });
 
         const mech_cards_by_team = computed(() => {
-            let results: Partial<Record<MECH_TEAM, CardItem[]>> = {};
+            let results: Partial<Record<MECH_TEAM, HevCardType[]>> = {};
 
             teamStore.non_shelf_teams.forEach(team => {
                 const teamMechIds = teamStore.getTeamMechIds(team.id);

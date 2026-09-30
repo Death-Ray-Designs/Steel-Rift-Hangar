@@ -11,6 +11,7 @@ import { useSupportAssetUnitsStore } from '../support-asset-units-store';
 import { useSupportAssetWeaponsStore } from '../support-asset-weapons-store';
 import { makeShelfTeam, useTeamStore } from '../team-store';
 import { normalizeArmorUpgrades } from './helpers'
+import { usePlayStore } from '../play-store';
 
 function getStores(scope = '') {
     return [
@@ -30,6 +31,7 @@ export function resetStores(scope = '') {
     getStores(scope).forEach((store: any) => {
         store.$reset();
     });
+    usePlayStore(scope).$reset()
 }
 
 export function disposeStores(scope = '') {

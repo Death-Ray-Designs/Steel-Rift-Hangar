@@ -1,33 +1,217 @@
 import { defineScopeableStore } from 'pinia-scope';
-import { usePrintSettingsStore } from './print-settings-store';
-import { useTeamStore } from './team-store';
+import { computed } from 'vue';
+import { useMechStore } from './mech-store';
 import { useSupportAssetUnitsStore } from './support-asset-units-store';
-import { useSupportAssetWeaponsStore } from './support-asset-weapons-store';
-import { ref, watch } from 'vue';
+import { make2KeyCounter, makeCounter, makeMultiKeyCounter } from './helpers/store-counters';
 
 export const usePlayStore = defineScopeableStore('play-store', ({ scope }: { scope: string }) => {
-        const teamStore = useTeamStore(scope);
-        const supportAssetUnitsStore = useSupportAssetUnitsStore(scope);
-        const supportAssetWeaponsStore = useSupportAssetWeaponsStore(scope);
-        const printSettingsStore = usePrintSettingsStore(scope);
+        const mechStore = useMechStore(scope);
+        const unitStore = useSupportAssetUnitsStore(scope);
 
-        const gameStarted = ref(false);
-
-        // @TODO watch for any play store state changes
-        watch([], () => {
-            gameStarted.value = true;
+        const {
+            counterData: hevWeaponUses,
+            add: addHevWeaponTimesUsed,
+            remove: removeHevWeaponTimesUsed,
+            get: getHevWeaponTimesUsed,
+            hasValues: hevHasWeaponUses,
+            clear: clearHevWeaponUses,
+        } = make2KeyCounter<number, number>((mechId, weaponAttachmentId) => {
+            return mechStore.getMechWeaponAttachmentInfo(mechId, weaponAttachmentId)?.max_uses ?? 0;
         });
 
-        // @TODO when game started show link
+        const {
+            counterData: hevUpgradeUses,
+            add: addHevUpgradeTimesUsed,
+            remove: removeHevUpgradeTimesUsed,
+            get: getHevUpgradeTimesUsed,
+            hasValues: hevHasUpgradeUses,
+            clear: clearHevUpgradeUses,
+        } = make2KeyCounter<number, number>((mechId, upgradeAttachmentId) => {
+            return mechStore.getMechUpgradeAttachmentInfo(mechId, upgradeAttachmentId)?.max_uses ?? 0;
+        });
 
-        // @TODO when navigating from play mode (started game) to edit mode show confirmation modal to clear play state.
+        const {
+            counterData: unitWeaponUses,
+            add: addUnitWeaponTimesUsed,
+            remove: removeUnitWeaponTimesUsed,
+            get: getUnitWeaponTimesUsed,
+            hasValues: unitHasWeaponUses,
+            clear: clearUnitWeaponUses,
+        } = makeMultiKeyCounter<[number, number, number]>((unitAttachmentId, vehicleAttachmentId, weaponIndex) => {
+            const vehicle = unitStore.getUnitAttachmentVehicleInfo(unitAttachmentId, vehicleAttachmentId);
+            return vehicle?.weapons[weaponIndex]?.max_uses ?? 0;
+        });
+
+        const {
+            counterData: hevStructureDamage,
+            add: addHevStructureDamage,
+            remove: removeHevStructureDamage,
+            get: getHevStructureDamage,
+            hasValues: hevHasStructureDamage,
+            clear: clearHevStructureDamage,
+        } = makeCounter<number>((mechId) => {
+            return mechStore.getMechInfo(mechId)?.structure_stat ?? 0;
+        });
+
+        const {
+            counterData: hevArmorDamage,
+            add: addHevArmorDamage,
+            remove: removeHevArmorDamage,
+            get: getHevArmorDamage,
+            hasValues: hevHasArmorDamage,
+            clear: clearHevArmorDamage,
+        } = makeCounter<number>((mechId) => {
+            return mechStore.getMechInfo(mechId)?.armor_stat ?? 0;
+        });
+
+        const {
+            counterData: unitStructureDamage,
+            add: addUnitStructureDamage,
+            remove: removeUnitStructureDamage,
+            get: getUnitStructureDamage,
+            hasValues: unitHasStructureDamage,
+            clear: clearUnitStructureDamage,
+        } = make2KeyCounter<number, number>((unitAttachmentId, vehicleAttachmentId) => {
+            return unitStore.getUnitAttachmentVehicleInfo(unitAttachmentId, vehicleAttachmentId)?.structure ?? 0;
+        });
+
+        const {
+            counterData: unitArmorDamage,
+            add: addUnitArmorDamage,
+            remove: removeUnitArmorDamage,
+            get: getUnitArmorDamage,
+            hasValues: unitHasArmorDamage,
+            clear: clearUnitArmorDamage,
+        } = make2KeyCounter<number, number>((unitAttachmentId, vehicleAttachmentId) => {
+            return unitStore.getUnitAttachmentVehicleInfo(unitAttachmentId, vehicleAttachmentId)?.armor ?? 0;
+        });
+
+        function getGarrisonUnit(unitAttachmentId: number, vehicleAttachmentId: number, garrisonIndex: number) {
+            return unitStore.getUnitAttachmentVehicleInfo(unitAttachmentId, vehicleAttachmentId)?.garrison_units[garrisonIndex];
+        }
+
+        const {
+            counterData: garrisonWeaponUses,
+            add: addGarrisonWeaponTimesUsed,
+            remove: removeGarrisonWeaponTimesUsed,
+            get: getGarrisonWeaponTimesUsed,
+            hasValues: garrisonHasWeaponUses,
+            clear: clearGarrisonWeaponUses,
+        } = makeMultiKeyCounter<[number, number, number, number]>((unitAttachmentId, vehicleAttachmentId, garrisonIndex, weaponIndex) => {
+            return getGarrisonUnit(unitAttachmentId, vehicleAttachmentId, garrisonIndex)?.weapons[weaponIndex]?.max_uses ?? 0;
+        });
+
+        const {
+            counterData: garrisonStructureDamage,
+            add: addGarrisonStructureDamage,
+            remove: removeGarrisonStructureDamage,
+            get: getGarrisonStructureDamage,
+            hasValues: garrisonHasStructureDamage,
+            clear: clearGarrisonStructureDamage,
+        } = makeMultiKeyCounter<[number, number, number]>((unitAttachmentId, vehicleAttachmentId, garrisonIndex) => {
+            return getGarrisonUnit(unitAttachmentId, vehicleAttachmentId, garrisonIndex)?.structure ?? 0;
+        });
+
+        const {
+            counterData: garrisonArmorDamage,
+            add: addGarrisonArmorDamage,
+            remove: removeGarrisonArmorDamage,
+            get: getGarrisonArmorDamage,
+            hasValues: garrisonHasArmorDamage,
+            clear: clearGarrisonArmorDamage,
+        } = makeMultiKeyCounter<[number, number, number]>((unitAttachmentId, vehicleAttachmentId, garrisonIndex) => {
+            return getGarrisonUnit(unitAttachmentId, vehicleAttachmentId, garrisonIndex)?.armor ?? 0;
+        });
+
+        // @TODO when navigating to edit mode and gameStarted show warning modal about play state
+        const gameStarted = computed(() => {
+            return hevHasWeaponUses()
+                || hevHasUpgradeUses()
+                || unitHasWeaponUses()
+                || hevHasStructureDamage()
+                || hevHasArmorDamage()
+                || unitHasStructureDamage()
+                || unitHasArmorDamage()
+                || garrisonHasWeaponUses()
+                || garrisonHasStructureDamage()
+                || garrisonHasArmorDamage();
+        });
 
         function $reset() {
-            gameStarted.value = false;
+            clearHevWeaponUses();
+            clearHevUpgradeUses();
+            clearUnitWeaponUses();
+            clearHevStructureDamage();
+            clearHevArmorDamage();
+            clearUnitStructureDamage();
+            clearUnitArmorDamage();
+            clearGarrisonWeaponUses();
+            clearGarrisonStructureDamage();
+            clearGarrisonArmorDamage();
         }
 
         return {
-            $reset
+            $reset,
+
+            hevStructureDamage,
+            hevArmorDamage,
+            hevWeaponUses,
+            hevUpgradeUses,
+
+            unitStructureDamage,
+            unitArmorDamage,
+            unitWeaponUses,
+
+            garrisonStructureDamage,
+            garrisonArmorDamage,
+            garrisonWeaponUses,
+
+            gameStarted,
+
+            getHevArmorDamage,
+            addHevArmorDamage,
+            removeHevArmorDamage,
+
+            getHevStructureDamage,
+            addHevStructureDamage,
+            removeHevStructureDamage,
+
+            addHevWeaponTimesUsed,
+            removeHevWeaponTimesUsed,
+            getHevWeaponTimesUsed,
+
+            addHevUpgradeTimesUsed,
+            removeHevUpgradeTimesUsed,
+            getHevUpgradeTimesUsed,
+
+            addUnitWeaponTimesUsed,
+            removeUnitWeaponTimesUsed,
+            getUnitWeaponTimesUsed,
+
+            getUnitStructureDamage,
+            addUnitStructureDamage,
+            removeUnitStructureDamage,
+
+            getUnitArmorDamage,
+            addUnitArmorDamage,
+            removeUnitArmorDamage,
+
+            addGarrisonWeaponTimesUsed,
+            removeGarrisonWeaponTimesUsed,
+            getGarrisonWeaponTimesUsed,
+
+            getGarrisonStructureDamage,
+            addGarrisonStructureDamage,
+            removeGarrisonStructureDamage,
+
+            getGarrisonArmorDamage,
+            addGarrisonArmorDamage,
+            removeGarrisonArmorDamage,
         };
-    }
+    }, (scope: string) => {
+        return {
+            persist: scope === '',
+        };
+    },
 );
+

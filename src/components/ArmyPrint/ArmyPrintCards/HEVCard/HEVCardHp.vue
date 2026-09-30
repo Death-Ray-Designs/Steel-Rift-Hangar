@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { chunk, sumBy } from 'es-toolkit';
-import { computed } from 'vue';
+import { computed, inject } from 'vue';
 import { FACTION_PERK } from '../../../../data/faction-perks.js';
 import { MECH_ARMOR_UPGRADE } from '../../../../data/mech-armor-upgrades';
 import { useFactionStore } from '../../../../store/faction-store';
 import { useMechStore } from '../../../../store/mech-store';
+import BtnPlusMinus from '../../../ArmyPlay/BtnPlusMinus.vue';
+import { usePlayStore } from '../../../../store/play-store';
 
 const mechStore = useMechStore();
 const factionStore = useFactionStore();
@@ -40,10 +42,15 @@ const armorHp = computed(() => {
   const extraArmor = sumBy(armorUpgrades, (v) => v.armor_mod ?? 0);
   const baseArmor = armorStat - extraArmor;
 
-  const points: string[] = [
-    ...new Array(baseArmor).fill('armor'),
-    ...new Array(extraArmor).fill('extra_armor'),
-  ];
+  type ArmorHP = {
+    type: 'armor' | 'extra_armor',
+    index: number
+  }
+
+  const points = [
+    ...new Array(baseArmor).fill(0).map((v, index) => ({ type: 'armor', index })),
+    ...new Array(extraArmor).fill(0).map((v, index) => ({ type: 'extra_armor', index: baseArmor + index })),
+  ] as ArmorHP[];
 
   if (armor6PerRow.value) {
     return chunk(points, 6);
@@ -70,6 +77,11 @@ const structureHp = computed(() => {
 
   const chunkCounts = splitIntoChunkCounts(structure);
 
+  type StructureHP = {
+    type: 'M' | 'D' | 'Ø' | '-' | null
+    index: number,
+  }
+
   let points: string[] = [];
   const map = [
     'M',
@@ -89,10 +101,11 @@ const structureHp = computed(() => {
     points.splice(points.length - 2, 2);
   }
 
+  const result = points.map((v, index) => ({ type: v, index })) as StructureHP[];
   if (structure6PerRow.value) {
-    return chunk(points, 6);
+    return chunk(result, 6);
   }
-  return chunk(points, 5);
+  return chunk(result, 5);
 });
 
 const armorUpgrades = computed(() => {
@@ -108,24 +121,54 @@ const armorUpgrades = computed(() => {
   return armorUpgrades.filter(armorUpgrade => !exclude.includes(armorUpgrade.id ?? ''));
 });
 
+const play = inject('play', false);
+
+const {
+  addHevStructureDamage,
+  addHevArmorDamage,
+  removeHevStructureDamage,
+  removeHevArmorDamage,
+  getHevStructureDamage,
+  getHevArmorDamage
+} = usePlayStore();
+
+const armorDamage = computed(() => getHevArmorDamage(mechId));
+const structureDamage = computed(() => getHevStructureDamage(mechId));
+
 </script>
 <template>
   <div class="row g-1 row-damage">
     <div class="col-5">
+      <BtnPlusMinus
+        v-if="play"
+        class="mt-1 pe-2 armor-buttons"
+        @add="addHevArmorDamage(mechId)"
+        @remove="removeHevArmorDamage(mechId)"
+      />
       <div class="hp-heading">
-        ARMOR <small class="fw-light" v-if="armorUpgrades">
+        ARMOR <small
+        class="fw-light"
+        v-if="armorUpgrades"
+      >
         <template v-if="armorUpgrades.length === 1">
           ({{ armorUpgrades[0].display_name }})
         </template>
         <template v-else-if="armorUpgrades.length > 1">
-          Multiple ({{armorUpgrades.length}})
+          Multiple ({{ armorUpgrades.length }})
         </template>
       </small>
       </div>
       <div class="hp-container">
-        <div class="hp-row" v-for="row in armorHp">
-          <span class="hp hp-armor" v-for="i in row">
-            <template v-if="i === 'extra_armor'">+</template>
+        <div
+          class="hp-row"
+          v-for="row in armorHp"
+        >
+          <span
+            class="hp hp-armor"
+            :class="{damaged:item.index + 1 <= armorDamage }"
+            v-for="item in row"
+          >
+            <template v-if="item.type === 'extra_armor'">+</template>
           </span>
         </div>
       </div>
@@ -133,18 +176,34 @@ const armorUpgrades = computed(() => {
     <div class="col-7">
       <div class="d-flex">
         <div class="hp-structure flex-grow-1">
+          <BtnPlusMinus
+            v-if="play"
+            class="mt-1 pe-2"
+            @add="addHevStructureDamage(mechId)"
+            @remove="removeHevStructureDamage(mechId)"
+          />
           <div class="hp-heading ps-0">
             STRUCTURE
           </div>
           <div class="hp-container">
-            <div class="hp-row" v-for="row in structureHp">
-              <span class="hp hp-structure" v-for="i in row">
-                <span v-if="i">{{ i }}</span>
+            <div
+              class="hp-row"
+              v-for="row in structureHp"
+            >
+              <span
+                class="hp hp-structure"
+                :class="{damaged: item.index + 1 <= structureDamage}"
+                v-for="item in row"
+              >
+                <span v-if="item.type">{{ item.type }}</span>
                 <span v-else>&nbsp;</span>
               </span>
             </div>
           </div>
-          <div class="structure-systems" v-if="structureSystem">
+          <div
+            class="structure-systems"
+            v-if="structureSystem"
+          >
             {{ structureSystem }}
           </div>
         </div>
@@ -187,3 +246,8 @@ const armorUpgrades = computed(() => {
     </div>
   </div>
 </template>
+<style lang="scss">
+.armor-buttons {
+  padding-left: 5pt;
+}
+</style>

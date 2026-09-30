@@ -76,7 +76,7 @@ $table-group-separator-color: color-mix(in srgb, currentColor 50%, transparent);
 @import 'print-page';
 @import 'page-cards-print';
 @import 'page-reference-print';
-
+@import 'play';
 
 :root {
   --bs-popover-header-color: var(--bs-body-color);

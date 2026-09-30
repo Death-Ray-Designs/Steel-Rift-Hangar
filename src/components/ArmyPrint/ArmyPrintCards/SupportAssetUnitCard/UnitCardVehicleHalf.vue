@@ -24,15 +24,14 @@ const damageSuffix = computed(() => {
   }
 });
 
-
 </script>
 <template>
   <UnitCardVehicles :unit-attachment-id="unitAttachmentId" />
   <div class="row g-1">
-    <div class="col-6 mt-0">
+    <div class="col-sm-6 col-12 mt-0">
       <UnitCardWeapons :weapons="weapons" :damage-suffix="damageSuffix" />
     </div>
-    <div class="col-6 mt-0">
+    <div class="col-sm-6 col-12 mt-0">
       <UnitCardTraits
         :traits="traits"
         :orders="orders"

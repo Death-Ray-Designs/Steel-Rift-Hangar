@@ -1,0 +1,107 @@
+
+.play-container {
+
+  .play-header {
+    font-weight: bold;
+  }
+
+  .section-container {
+    background: #fff;
+    padding: 1rem 1rem 1rem;
+    border-top: 1px solid #808080;
+  }
+
+  .output-container {
+    .page-card-grid-flex {
+
+      gap: 0.25rem;
+      display: flex;
+      padding: 0;
+
+      .game-card {
+        margin: 0 0 0.5rem;
+
+        &.card-support-asset-size-1,
+        &.card-support-asset-size-2 {
+          width: auto;
+        }
+      }
+    }
+
+    .game-card {
+      height: auto;
+      width: auto;
+      margin-bottom: 0.5rem;
+
+      .row-damage {
+        height: auto;
+      }
+
+      .game-card-footer {
+        display: none;
+      }
+
+      .table-stats tbody td {
+        font-size: 100% !important;
+      }
+
+      .card-name {
+        font-size: 100%;
+      }
+    }
+  }
+
+  .used,
+  .damaged {
+    background: #000;
+  }
+}
+
+@include media-breakpoint-down(sm) {
+  .play-container {
+
+    .output-container .game-card {
+      .card-name {
+        font-size: 120%;
+      }
+    }
+
+    .game-card {
+      outline: 0;
+      border: 0;
+      border-top: 1px solid #b8b8b8;
+      padding-left: 0.5rem;
+      padding-right: 0.5rem;
+    }
+
+    .section-container {
+      padding-left: 0;
+      padding-right: 0;
+      padding-bottom: 1rem;
+
+      > .row {
+        margin-left: 0;
+        margin-right: 0;
+      }
+    }
+
+    .play-header {
+      padding-left: 1rem;
+      padding-right: 1rem;
+    }
+
+    .output-container {
+      .page-card-grid-flex {
+        display: block;
+
+        .game-card.card-support-asset-size-1,
+        .game-card.card-support-asset-size-2 {
+          width: auto;
+          border: 0;
+          border-top: 1px solid #b8b8b8;
+          display: block;
+        }
+      }
+    }
+  }
+}

@@ -1,20 +1,42 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, inject } from 'vue';
 import { unitTraitDisplayName } from '../../../../data/unit-traits.js';
 import { useSupportAssetUnitsStore } from '../../../../store/support-asset-units-store';
 import FormatInches from '../../../functional/format-inches.vue';
 import { formatCardRef } from '../../../functional/formatters.js';
 import UnitCardHalfHeader from './UnitCardHalfHeader.vue';
+import BtnPlusMinus from '../../../ArmyPlay/BtnPlusMinus.vue';
+import { usePlayStore } from '../../../../store/play-store';
 
 const { unitAttachmentId } = defineProps<{
   unitAttachmentId: number
 }>();
 
 const unitStore = useSupportAssetUnitsStore();
-const units = computed(() => unitStore.getUnitAttachmentGarrisonUnitsInfo(unitAttachmentId));
-
+const units = computed(() => {
+  const vehicles = unitStore.getUnitAttachmentInfo(unitAttachmentId)?.vehicles ?? [];
+  return vehicles.flatMap((vehicle) => vehicle.garrison_units.map((unit, garrisonIndex) => ({
+    ...unit,
+    vehicle_id: vehicle.id,
+    garrison_index: garrisonIndex,
+  })));
+});
 const hasCardRefIds = computed(() => !!units.value.find((unit) => unit.card_ref_id));
 const hasArmor = computed(() => !!units.value.find((unit) => unit.armor));
+
+const play = inject('play', false);
+
+const {
+  addGarrisonWeaponTimesUsed,
+  removeGarrisonWeaponTimesUsed,
+  getGarrisonWeaponTimesUsed,
+  addGarrisonArmorDamage,
+  removeGarrisonArmorDamage,
+  getGarrisonArmorDamage,
+  addGarrisonStructureDamage,
+  removeGarrisonStructureDamage,
+  getGarrisonStructureDamage,
+} = usePlayStore();
 
 </script>
 <template>
@@ -52,7 +74,7 @@ const hasArmor = computed(() => !!units.value.find((unit) => unit.armor));
       </thead>
       <tbody>
       <tr
-        v-for="item in units" :key="item.id"
+        v-for="item in units" :key="`${item.vehicle_id}-${item.garrison_index}`"
       >
         <td v-if="hasCardRefIds" class="text-end font-monospace small">
           {{ formatCardRef(item.card_ref_id) }}
@@ -61,30 +83,57 @@ const hasArmor = computed(() => !!units.value.find((unit) => unit.armor));
           {{ item.display_name }}
         </td>
         <td class="text-end">
-          <format-inches :value="item.move" />
+          <format-inches :value="item.move"/>
         </td>
         <td
           v-if="hasArmor"
           class="text-start"
         >
-          <div class="text-nowrap" v-if="item.armor"><span class="use use-armor"
-                                                           v-for="i in Array(item.armor)">&nbsp;</span>
+          <BtnPlusMinus
+            v-if="play && item.armor"
+            class="mb-1"
+            @add="addGarrisonArmorDamage(unitAttachmentId, item.vehicle_id, item.garrison_index)"
+            @remove="removeGarrisonArmorDamage(unitAttachmentId, item.vehicle_id, item.garrison_index)"
+          />
+          <div class="text-nowrap" v-if="item.armor"><span
+            class="use use-armor"
+            :class="{used: i <= getGarrisonArmorDamage(unitAttachmentId, item.vehicle_id, item.garrison_index)}"
+            v-for="i in item.armor"
+          >&nbsp;</span>
           </div>
         </td>
         <td class="text-start">
-          <div class="text-nowrap" v-if="item.structure"><span class="use use-structure"
-                                                               v-for="i in Array(item.structure)">&nbsp;</span>
+          <BtnPlusMinus
+            v-if="play && item.structure"
+            class="mb-1"
+            @add="addGarrisonStructureDamage(unitAttachmentId, item.vehicle_id, item.garrison_index)"
+            @remove="removeGarrisonStructureDamage(unitAttachmentId, item.vehicle_id, item.garrison_index)"
+          />
+          <div class="text-nowrap" v-if="item.structure"><span
+            class="use use-structure"
+            :class="{used: i <= getGarrisonStructureDamage(unitAttachmentId, item.vehicle_id, item.garrison_index)}"
+            v-for="i in item.structure"
+          >&nbsp;</span>
           </div>
         </td>
         <td class="text-start small">
-          <span
-            class=" text-nowrap"
+          <div
+            class="d-inline text-nowrap"
             v-for="(weapon, index) in item.weapons"
           >
-            {{ weapon.display_name }}<span class="text-nowrap" v-if="weapon.max_uses">&nbsp;<span
-            class="use use-weapon" v-for="i in Array(weapon.max_uses)">&nbsp;</span></span><span
-            v-if="index !== item.weapons.length - 1">, </span>
-          </span>
+            {{ weapon.display_name }}
+            <BtnPlusMinus
+              v-if="play && weapon.max_uses"
+              @add="addGarrisonWeaponTimesUsed(unitAttachmentId, item.vehicle_id, item.garrison_index, index)"
+              @remove="removeGarrisonWeaponTimesUsed(unitAttachmentId, item.vehicle_id, item.garrison_index, index)"
+            />
+            <span class="text-nowrap" v-if="weapon.max_uses">&nbsp;<span
+              :class="{used: i <= getGarrisonWeaponTimesUsed(unitAttachmentId, item.vehicle_id, item.garrison_index, index)}"
+              class="use use-weapon" v-for="i in weapon.max_uses"
+            >&nbsp;</span></span><span
+            v-if="index !== item.weapons.length - 1"
+          >, </span>
+          </div>
         </td>
         <td class="text-start small">
           {{ item.traits.map(t => unitTraitDisplayName(t)).join(', ') }}

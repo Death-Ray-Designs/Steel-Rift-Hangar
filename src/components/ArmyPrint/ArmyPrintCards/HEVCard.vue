@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { setComponentScope } from 'pinia-scope';
-import { computed, onMounted, ref, useTemplateRef } from 'vue';
+import { computed, inject, onMounted, useTemplateRef } from 'vue';
 import { useMechStore } from '../../../store/mech-store';
 import CardFooter from './CardParts/CardFooter.vue';
 import CardHeader from './CardParts/CardHeader.vue';
@@ -13,6 +13,8 @@ const { mechId, storeScope = '' } = defineProps<{
   mechId: number,
   storeScope?: string
 }>();
+
+const play = inject('play', false);
 
 setComponentScope(storeScope);
 const mechStore = useMechStore(storeScope);
@@ -29,6 +31,7 @@ const MIN_FONT_SIZE_PT = 6;
 const STEP_PT = 0.25;
 
 function adjustFontSize() {
+  if(play) return
   const el = adjustableRef.value;
   if (!el) return;
   const container = el.closest('.card-content-container') as HTMLElement | null;
@@ -50,14 +53,20 @@ onMounted(adjustFontSize);
   <div class="game-card">
     <div class="card-content-container">
 
-      <CardHeader :title="info.display_name" />
-      <HEVCardStats :mech-id="mechId" />
-      <HEVCardHp :mech-id="mechId" />
+      <CardHeader :title="info.display_name"/>
+      <HEVCardStats :mech-id="mechId"/>
+      <HEVCardHp :mech-id="mechId"/>
       <div ref="adjustableSize">
-        <HEVCardWeapons :mech-id="mechId" @content-changed="adjustFontSize" />
-        <HEVCardUpgrades :mech-id="mechId" @content-changed="adjustFontSize" />
+        <HEVCardWeapons
+          :mech-id="mechId"
+          @content-changed="adjustFontSize"
+        />
+        <HEVCardUpgrades
+          :mech-id="mechId"
+          @content-changed="adjustFontSize"
+        />
       </div>
-      <CardFooter />
+      <CardFooter/>
     </div>
   </div>
 </template>
