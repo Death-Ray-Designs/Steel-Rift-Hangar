@@ -29,7 +29,7 @@ provide('color_mode', mode);
 
 </script>
 <template>
-  <div class="d-flex flex-column vh-100">
+  <div class="d-flex flex-column min-vh-100">
 
     <BToastOrchestrator />
     <BModalOrchestrator />
