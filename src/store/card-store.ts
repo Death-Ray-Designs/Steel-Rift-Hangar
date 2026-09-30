@@ -3,13 +3,13 @@ import { defineScopeableStore } from 'pinia-scope';
 import { computed } from 'vue';
 import { useFactionStore } from './faction-store';
 import { usePrintSettingsStore } from './print-settings-store';
-import type { FACTION_PERK } from '@/data/faction-perks';
-import type { MECH_TEAM } from '@/data/mech-teams';
-import type { SUPPORT_ASSET_WEAPON } from '@/data/support-asset-weapons';
-import { useTeamStore } from '@/store/team-store';
+import type { FACTION_PERK } from '../data/faction-perks';
+import type { MECH_TEAM } from '../data/mech-teams';
+import type { SUPPORT_ASSET_WEAPON } from '../data/support-asset-weapons';
+import { useTeamStore } from './team-store';
 import { sortBy } from 'es-toolkit';
-import { useSupportAssetUnitsStore } from '@/store/support-asset-units-store';
-import { useSupportAssetWeaponsStore } from '@/store/support-asset-weapons-store';
+import { useSupportAssetUnitsStore } from './support-asset-units-store';
+import { useSupportAssetWeaponsStore } from './support-asset-weapons-store';
 
 export type RefCardType = {
     type: 'mine_drone' | 'msoe',

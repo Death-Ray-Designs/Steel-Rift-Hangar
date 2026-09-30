@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { chunk, flatMap } from 'es-toolkit';
 import { computed } from 'vue';
-import { usePrintSettingsStore } from '@/store/print-settings-store';
 import FactionPerkCard from './ArmyPrintCards/FactionPerkCard.vue';
 import HEVCard from './ArmyPrintCards/HEVCard.vue';
 import MineDroneCard from './ArmyPrintCards/MineDroneCard.vue';
@@ -13,7 +12,8 @@ import {
   type SupportAssetUnitCardType,
   type SupportAssetWeaponCardType,
   useCardStore
-} from '@/store/card-store';
+} from '../../store/card-store';
+import { usePrintSettingsStore } from '../../store/print-settings-store';
 
 const printSettingsStore = usePrintSettingsStore();
 const cardStore = useCardStore();
