@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, watch } from 'vue';
+import { computed, inject, watch } from 'vue';
 import { type MechArmorUpgradeInfo } from '../../../../data/mech-armor-upgrades';
 import { MECH_MOBILITIES, MECH_MOBILITY } from '../../../../data/mech-mobility';
 import { MECH_UPGRADE } from '../../../../data/mech-upgrades.js';
@@ -8,9 +8,12 @@ import { useMechStore } from '../../../../store/mech-store';
 import { useTeamStore } from '../../../../store/team-store';
 import type { TraitInfo } from '../../../../types';
 import SvgIcon from '../../../UI/Icon.vue';
+import { usePlayStore } from '../../../../store/play-store';
 
 const mechStore = useMechStore();
 const teamStore = useTeamStore();
+const playStore = usePlayStore();
+const play = inject('play', false);
 
 const emit = defineEmits<{
   (e: 'contentChanged'): void,
@@ -26,6 +29,8 @@ type UpgradeItem = {
   traits?: TraitInfo<UPGRADE_TRAIT>[],
   is_team_perk?: boolean,
   max_uses?: number,
+  // set only for mech upgrade attachments, used to track uses in play mode
+  upgrade_attachment_id?: number,
 }
 
 const armorUpgrades = computed((): MechArmorUpgradeInfo[] => {
@@ -72,7 +77,8 @@ const upgrades = computed((): UpgradeItem[] => {
       return item;
     })
     // shown in weapons row instead
-    .filter(item => !excludeUpgradeIds.includes(item.upgrade_id)) as UpgradeItem[];
+    .filter(item => !excludeUpgradeIds.includes(item.upgrade_id))
+    .map(item => ({ ...item, upgrade_attachment_id: item.id })) as UpgradeItem[];
 
   const mobility: UpgradeItem[] = [];
   const mech = mechStore.getMech(mechId)!;
@@ -96,6 +102,17 @@ const orders = computed(() => {
 });
 
 watch([upgrades, orders, armorUpgradesList], () => emit('contentChanged'), { flush: 'post' });
+
+function isUpgradeUsed(upgradeAttachmentId: number | undefined, index: number) {
+  return upgradeAttachmentId !== undefined && index <= playStore.getHevUpgradeTimesUsed(mechId, upgradeAttachmentId);
+}
+
+function clickUpgradeUse(upgradeAttachmentId: number | undefined, index: number) {
+  if (!play) return;
+  if (upgradeAttachmentId === undefined) return;
+
+  isUpgradeUsed(upgradeAttachmentId, index) ? playStore.removeHevUpgradeTimesUsed(mechId, upgradeAttachmentId) : playStore.addHevUpgradeTimesUsed(mechId, upgradeAttachmentId);
+}
 </script>
 <template>
   <div v-if="upgrades.length || armorUpgrades.length">
@@ -115,12 +132,14 @@ watch([upgrades, orders, armorUpgradesList], () => emit('contentChanged'), { flu
           </span>
         </template>
         <template v-else>
-          <template v-if="upgrade.max_uses">&nbsp;</template>
-          <span
-            v-if="upgrade.max_uses"
-            v-for="i in Array(upgrade.max_uses)"
+          <template v-if="upgrade.max_uses">&nbsp;<span
+            v-for="i in upgrade.max_uses"
+            :key="i"
             class="upgrade-use"
+            :class="{filled: isUpgradeUsed(upgrade.upgrade_attachment_id, i)}"
+            @click="clickUpgradeUse(upgrade.upgrade_attachment_id, i)"
           >&nbsp;</span>
+          </template>
           <template v-if="upgrade.traits?.length">:</template>
           <template v-for="trait in upgrade.traits">
             {{ trait.display_name }}

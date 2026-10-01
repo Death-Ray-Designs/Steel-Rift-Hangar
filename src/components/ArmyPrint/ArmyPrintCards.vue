@@ -87,34 +87,34 @@ const supportAssetPages = computed(() => {
 </script>
 <template>
   <div
-      v-for="page in pages"
-      class="page-preview page-letter"
-      style="background-color:white"
+    v-for="page in pages"
+    class="page-preview page-letter"
+    style="background-color:white"
   >
     <div class="page-card-grid">
       <template v-for="item in page">
-        <HEVCard v-if="item.type === 'hev'" :mech-id="item.mechId"/>
-        <MineDroneCard v-if="item.type === 'mine_drone'"/>
-        <MSOECard v-if="item.type === 'msoe'"/>
-        <FactionPerkCard v-if="item.type === 'faction_perk'" :perk-id="item.perkId"/>
+        <HEVCard v-if="item.type === 'hev'" :mech-id="item.mechId" />
+        <MineDroneCard v-if="item.type === 'mine_drone'" />
+        <MSOECard v-if="item.type === 'msoe'" />
+        <FactionPerkCard v-if="item.type === 'faction_perk'" :perk-id="item.perkId" />
       </template>
     </div>
   </div>
 
   <div
-      v-for="page in supportAssetPages"
-      class="page-preview page-letter"
-      style="background-color:white"
+    v-for="page in supportAssetPages"
+    class="page-preview page-letter"
+    style="background-color:white"
   >
     <div class="page-card-grid-flex">
       <template v-for="item in page">
         <SupportAssetWeaponCard
-            v-if="item.type === 'support_asset_weapon'"
-            :support-asset-id="item.supportAssetId"
+          v-if="item.type === 'support_asset_weapon'"
+          :support-asset-id="item.supportAssetId"
         />
         <SupportAssetUnitCard
-            v-if="item.type === 'support_asset_unit'"
-            :unit-attachment-id="item.unitAttachmentId"
+          v-if="item.type === 'support_asset_unit'"
+          :unit-attachment-id="item.unitAttachmentId"
         />
       </template>
     </div>

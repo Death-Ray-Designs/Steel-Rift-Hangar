@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { chunk } from 'es-toolkit';
-import { computed } from 'vue';
+import { computed, inject } from 'vue';
 import { UNIT_TRAIT, unitTraitDisplayName } from '../../../../data/unit-traits.js';
 import { useSupportAssetUnitsStore } from '../../../../store/support-asset-units-store';
 import type { Trait } from '../../../../types';
 import FormatInches from '../../../functional/format-inches.vue';
 import { formatCardRef } from '../../../functional/formatters.js';
 import UnitCardHalfHeader from './UnitCardHalfHeader.vue';
+import { usePlayStore } from '../../../../store/play-store';
 
 const { unitAttachmentId } = defineProps<{
   unitAttachmentId: number
@@ -31,6 +32,44 @@ const statArray = (stat: number) => {
 
 function filterTraits(traits: Trait<UNIT_TRAIT>[]) {
   return traits.filter(t => t.id !== UNIT_TRAIT.GARRISON);
+}
+
+const play = inject('play', false);
+
+const {
+  addUnitWeaponTimesUsed,
+  removeUnitWeaponTimesUsed,
+  getUnitWeaponTimesUsed,
+  addUnitArmorDamage,
+  removeUnitArmorDamage,
+  getUnitArmorDamage,
+  getUnitStructureDamage,
+  addUnitStructureDamage,
+  removeUnitStructureDamage,
+
+} = usePlayStore();
+
+function isStructureDamaged(damageKey: number, chunkIndex: number, index: number) {
+  return chunkIndex * 4 + index < getUnitStructureDamage(unitAttachmentId, damageKey);
+}
+
+function isArmorDamaged(damageKey: number, chunkIndex: number, index: number) {
+  return chunkIndex * 4 + index < getUnitArmorDamage(unitAttachmentId, damageKey);
+}
+
+function clickArmorDamaged(itemId: number, chunkIndex: number, index: number) {
+  if (!play) return;
+  isArmorDamaged(itemId, chunkIndex, index) ? removeUnitArmorDamage(unitAttachmentId, itemId) : addUnitArmorDamage(unitAttachmentId, itemId);
+}
+
+function clickStructureDamaged(itemId: number, chunkIndex: number, index: number) {
+  if (!play) return;
+  isStructureDamaged(itemId, chunkIndex, index) ? removeUnitStructureDamage(unitAttachmentId, itemId) : addUnitStructureDamage(unitAttachmentId, itemId);
+}
+
+function clickWeaponUse(itemId: number, weaponIndex: number, i: number) {
+  if (!play) return;
+  i <= getUnitWeaponTimesUsed(unitAttachmentId, itemId, weaponIndex) ? removeUnitWeaponTimesUsed(unitAttachmentId, itemId, weaponIndex) : addUnitWeaponTimesUsed(unitAttachmentId, itemId, weaponIndex);
 }
 
 </script>
@@ -85,20 +124,38 @@ function filterTraits(traits: Trait<UNIT_TRAIT>[]) {
           <format-inches :value="item.jump" />
         </td>
         <td class="text-start" v-if="hasArmor">
-          <div class="text-nowrap" v-for="chunk in statArray(item.armor)"><span class="use use-armor"
-                                                                                v-for="i in chunk">&nbsp;</span>
+          <div class="use-group use-group-stat">
+            <div class="text-nowrap" v-for="(chunk, chunkIndex) in statArray(item.armor)"><span
+              class="use use-armor"
+              :class="{filled: isArmorDamaged(item.id, chunkIndex, i)}"
+              @click="clickArmorDamaged(item.id, chunkIndex, i)"
+              v-for="(_, i) in chunk"
+            >&nbsp;</span>
+            </div>
           </div>
         </td>
         <td class="text-start">
-          <div class="text-nowrap" v-for="chunk in statArray(item.structure)"><span class="use use-structure"
-                                                                                    v-for="i in chunk">&nbsp;</span>
+          <div class="use-group use-group-stat">
+            <div class="text-nowrap" v-for="(chunk, chunkIndex) in statArray(item.structure)"><span
+              class="use use-structure"
+              :class="{filled: isStructureDamaged(item.id, chunkIndex, i)}"
+              @click="clickStructureDamaged(item.id, chunkIndex, i)"
+              v-for="(_, i) in chunk"
+            >&nbsp;</span>
+            </div>
           </div>
         </td>
         <td class="text-start small">
           <div v-for="(weapon, index) in item.weapons">
-            {{ weapon.display_name }}<span class="text-nowrap" v-if="weapon.max_uses">&nbsp;<span
-            class="use use-weapon" v-for="i in Array(weapon.max_uses)">&nbsp;</span></span><span
-            v-if="index !== item.weapons.length - 1">, </span>
+            {{ weapon.display_name }}
+            <template v-if="weapon.max_uses">&nbsp;<span class="text-nowrap"><span
+              :class="{filled: i <= getUnitWeaponTimesUsed(unitAttachmentId, item.id, index)}"
+              class="use use-weapon" v-for="i in weapon.max_uses"
+              @click="clickWeaponUse(item.id, index, i)"
+            >&nbsp;</span></span></template>
+            <span
+              v-if="index !== item.weapons.length - 1"
+            >, </span>
           </div>
         </td>
         <td v-if="hasGarrisonWithRefIds" class="text-end small">

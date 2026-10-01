@@ -568,13 +568,17 @@ export const useMechStore = defineScopeableStore('mech', ({ scope }: { scope: st
             const hasCombatShield = mech.upgrades.find(u => u.upgrade_id === MECH_UPGRADE.COMBAT_SHIELD);
             let combat_shield_damage_penalty = 0;
             if (hasCombatShield) {
-                combat_shield_damage_penalty = 1;
+                // damage cannot be reduced to zero
+                if (damage && damage > 1) {
+                    combat_shield_damage_penalty = 1;
+                }
             }
+
             const result: MechWeaponInfo = {
                 weapon_id: weaponId,
                 display_name,
                 ranged_base_damage: damage,
-                ranged_total_damage: damage ? Math.max(damage - combat_shield_damage_penalty, 1) : null,
+                ranged_total_damage: damage ? damage - combat_shield_damage_penalty : null,
                 slots,
                 cost,
                 range,

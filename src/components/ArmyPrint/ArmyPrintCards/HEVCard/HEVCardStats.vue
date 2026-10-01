@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, inject } from 'vue';
 import { useMechStore } from '../../../../store/mech-store';
 import { useTeamStore } from '../../../../store/team-store';
 import FormatInches from '../../../functional/format-inches.vue';
 import SvgIcon from '../../../UI/Icon.vue';
+import { usePlayStore } from '../../../../store/play-store';
 
 const mechStore = useMechStore();
 const teamStore = useTeamStore();
@@ -17,6 +18,36 @@ const team = computed(() => {
   const { teamId } = teamStore.getMechTeamAndGroupIds(mechId);
   return teamStore.getTeamDef(teamId);
 });
+const play = inject('play', false);
+
+const {
+  getHevStructureCriticals
+} = usePlayStore();
+
+const hasMoveCritical = computed(() => {
+  if (!play) return false;
+
+  return getHevStructureCriticals(mechId).move;
+});
+
+const move = computed(() => {
+  const stat = info.value.move;
+  if (play && hasMoveCritical.value) {
+    return stat - 1;
+  }
+
+  return stat;
+});
+
+const jump = computed(() => {
+  const stat = info.value.jump;
+  if (play && stat && hasMoveCritical.value) {
+    return stat - 1;
+  }
+
+  return stat;
+});
+
 </script>
 <template>
   <div class="row g-1">
@@ -44,11 +75,11 @@ const team = computed(() => {
         <tbody>
         <tr>
           <td>{{ info.tonnage_stat }}</td>
-          <td>
-            <format-inches :value="info.move" />
+          <td :class="{'number-damaged': hasMoveCritical}">
+            <format-inches :value="move" />
           </td>
-          <td>
-            <format-inches :value="info.jump" />
+          <td :class="{'number-damaged': info.jump && hasMoveCritical}">
+            <format-inches :value="jump" />
           </td>
           <td>{{ info.defense }}+</td>
         </tr>

@@ -1,5 +1,7 @@
 <script setup lang="ts">
 
+import { computed } from 'vue';
+
 const {
   meleeTotalDamage,
   meleeModifierDamage,
@@ -8,6 +10,7 @@ const {
   combatShieldDamagePenalty,
   rangedTotalDamage,
   suffix = '',
+  hasDamageCritical = false
 } = defineProps<{
   meleeBaseDamage?: number | null,
   meleeModifierDamage?: number,
@@ -16,23 +19,47 @@ const {
   rangedTotalDamage: number | null,
   combatShieldDamagePenalty: number,
   suffix?: string
+  hasDamageCritical?: boolean
 }>();
+
+const meleeTotalDamageValue = computed(() => {
+  if (hasDamageCritical && meleeTotalDamage) {
+    return meleeTotalDamage - 1;
+  }
+  return meleeTotalDamage;
+});
+
+const meleeDamagePenalty = computed(() => (hasDamageCritical ? 1 : 0));
+const rangedDamagePenalty = computed(() => combatShieldDamagePenalty + (hasDamageCritical ? 1 : 0));
+
+const rangedTotalDamageValue = computed(() => {
+  if (!rangedTotalDamage) return null;
+  if (hasDamageCritical) {
+    return rangedTotalDamage - 1;
+  }
+  return rangedTotalDamage;
+});
 </script>
 <template>
   <div v-if="meleeBaseDamage" class="text-end">
     <small class="fw-light">
-      {{ meleeBaseDamage }}+{{ meleeModifierDamage }} =
+      {{ meleeBaseDamage }} + {{ meleeModifierDamage }}
+      <template v-if="meleeDamagePenalty"> - {{ meleeDamagePenalty }}</template>
+      =
     </small>
-    {{ meleeTotalDamage }}
+    {{ meleeTotalDamageValue }}
   </div>
-  <template v-else-if="rangedBaseDamage && combatShieldDamagePenalty">
+  <!--  damage cannot be zero  -->
+  <template v-else-if="rangedTotalDamageValue === 0">
+    1{{ suffix }}
+  </template>
+  <template v-else-if="rangedBaseDamage && rangedDamagePenalty">
     <small class="fw-light">
-      {{ rangedBaseDamage }}-{{ combatShieldDamagePenalty }} =
+      {{ rangedBaseDamage }} - {{ rangedDamagePenalty }} =
     </small>
-    {{ rangedTotalDamage }}
-    {{ suffix }}
+    {{ rangedTotalDamageValue }}{{ suffix }}
   </template>
   <template v-else>
-    {{ rangedTotalDamage }}{{ suffix }}
+    {{ rangedTotalDamageValue }}{{ suffix }}
   </template>
 </template>

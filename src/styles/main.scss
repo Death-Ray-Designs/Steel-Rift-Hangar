@@ -76,7 +76,7 @@ $table-group-separator-color: color-mix(in srgb, currentColor 50%, transparent);
 @import 'print-page';
 @import 'page-cards-print';
 @import 'page-reference-print';
-
+@import 'play';
 
 :root {
   --bs-popover-header-color: var(--bs-body-color);
@@ -217,4 +217,9 @@ body[data-bs-theme='dark'] {
 .mech-drag-wrapper {
   padding-top: 0.25rem;
   padding-bottom: 0.25rem;
+}
+
+.number-damaged {
+  color:  shade-color($danger, 50%);
+  background:  rgba(255,0,0,0.2);
 }

@@ -1,8 +1,11 @@
-<script setup lang="ts">
+<script
+  setup
+  lang="ts"
+>
 import { BButton, BModal } from 'bootstrap-vue-next';
 import { storeToRefs } from 'pinia';
 import { ref } from 'vue';
-import { ROUTE_HOME, ROUTE_PRINT } from '../router.js';
+import { ROUTE_HOME, ROUTE_PLAY, ROUTE_PRINT } from '../router.js';
 import { useArmyListStore } from '../store/army-list-store';
 import { resetStores } from '../store/helpers/store-save-load';
 import { useSupportAssetCountsStore } from '../store/support-asset-count-store';
@@ -12,23 +15,30 @@ import Fraction from './functional/fraction.vue';
 import Navbar from './Navbar.vue';
 import BtnLoad from './UI/BtnLoad.vue';
 import BtnSave from './UI/BtnSave.vue';
+import { useRouteLayout } from '../composables/useRouteLayout';
 
 const { used_teams_count, max_teams_count } = storeToRefs(useTeamStore());
 const { used_support_assets, max_support_assets } = storeToRefs(useSupportAssetCountsStore());
 const { used_tons, max_tons, name } = storeToRefs(useArmyListStore());
 
 const resetModal = ref(false);
-
+const { isPlayLayout } = useRouteLayout();
 </script>
 <template>
   <div class="sticky-top bg-body text-body border-bottom shadow app-header">
     <Navbar />
-    <div class="container-lg">
-      <div class="pt-2 px-3 pb-2">
+    <div
+      class="container-lg"
+      v-if="!isPlayLayout"
+    >
+      <div class="px-3 pb-2">
         <div class="row">
           <div class="col-md-3">
-            <div class="d-flex">
-              <label class="col-form-label form-control-sm fw-bold me-2" for="list-name">
+            <div class="d-flex pt-2">
+              <label
+                class="col-form-label form-control-sm fw-bold me-2"
+                for="list-name"
+              >
                 Army&nbsp;Name:
               </label>
               <input
@@ -40,7 +50,7 @@ const resetModal = ref(false);
             </div>
           </div>
 
-          <div class="col-md-6">
+          <div class="col-md-6 pt-2">
             <div class="col-form-label form-control-sm d-inline-block text-end">
               <strong>Teams: </strong>
               <fraction
@@ -69,17 +79,20 @@ const resetModal = ref(false);
             <BtnArmyListValidation />
           </div>
           <div class="col-md-3 text-md-end header-btns">
-            <BtnSave />
-            <BtnLoad />
+            <BtnSave class="mt-2 align-middle" />
+            <BtnLoad class="mt-2 align-middle" />
             <BButton
               @click="resetModal = !resetModal"
               size="sm"
               variant="danger"
-              class="ms-1"
+              class="ms-1 mt-2 d-inline-block"
             >
               Reset
             </BButton>
-            <div class="btn-group d-inline-block ms-1 mt-2 mt-xl-0" role="group">
+            <div
+              class="btn-group d-inline-block ms-1 mt-2"
+              role="group"
+            >
               <router-link
                 :to="{ name: ROUTE_HOME }"
                 class="btn btn-sm btn-default"
@@ -93,6 +106,13 @@ const resetModal = ref(false);
                 activeClass="active"
               >
                 Print
+              </router-link>
+              <router-link
+                :to="{ name: ROUTE_PLAY }"
+                class="btn btn-sm btn-default"
+                activeClass="active"
+              >
+                Play
               </router-link>
             </div>
           </div>

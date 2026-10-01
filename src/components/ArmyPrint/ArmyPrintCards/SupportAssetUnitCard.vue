@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, inject } from 'vue';
 import { ORDER } from '../../../data/orders';
 import { useSupportAssetUnitsStore } from '../../../store/support-asset-units-store';
 import CardFooter from './CardParts/CardFooter.vue';
@@ -33,9 +33,9 @@ const subType = computed(() => {
   if (info.value.is_coordinated_asset_team) {
     return ' Coordinated Asset Team';
   }
-  return ''
+  return '';
 });
-
+const play = inject('play', false);
 </script>
 <template>
   <div
@@ -54,7 +54,7 @@ const subType = computed(() => {
 
       <template v-if="hasGarrison">
         <div class="row g-2">
-          <div class="col-6">
+          <div class="col-12 col-lg-6">
             <UnitCardVehicleHalf
               :unit-attachment-id="unitAttachmentId"
               :weapons="vehicleWeapons"
@@ -62,7 +62,7 @@ const subType = computed(() => {
               :orders="vehicleOrders"
             />
           </div>
-          <div class="col-6">
+          <div class="col-12 col-lg-6">
             <UnitCardGarrisonInfantry :unit-attachment-id="unitAttachmentId" />
             <div class="row g-1">
               <div class="col-6 mt-0">

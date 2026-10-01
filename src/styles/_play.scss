@@ -1,0 +1,183 @@
+
+.play-container {
+
+  background: #fff;
+
+  .play-header {
+    font-weight: bold;
+    background: #cdcdcd;
+    padding: 1rem 0.5rem;
+    margin: 0;
+  }
+
+  .section-container {
+    background: #fff;
+    padding: 1rem 1rem 1rem;
+    border-top: 1px solid #808080;
+  }
+
+  .output-container {
+    .page-card-grid-flex {
+
+      gap: 0.25rem;
+      display: flex;
+      padding: 0;
+
+      .game-card {
+        margin: 0 0 0.5rem;
+
+        &.card-support-asset-size-1,
+        &.card-support-asset-size-2 {
+          width: auto;
+        }
+      }
+    }
+
+    .game-card {
+      height: auto;
+      width: auto;
+      margin-bottom: 0.5rem;
+
+      .row-damage {
+        height: auto;
+      }
+
+      .game-card-footer {
+        display: none;
+      }
+
+      // let slot boxes flow into as many rows as needed instead of fixed chunks
+      .use-group {
+        display: flex;
+        flex-wrap: wrap;
+
+        > div {
+          display: contents;
+        }
+      }
+
+      // unit armor/structure: at most 4 slots (24px + 1px margin) per row
+      .use-group-stat {
+        max-width: calc(4 * 25px);
+      }
+
+      // hev armor/structure: wrap to fit, at most 5 slots (24px + 1px margin) per row
+      .row-damage .hp-container {
+        display: flex;
+        flex-wrap: wrap;
+        // keep the print padding-left out of the max-width
+        box-sizing: content-box;
+        max-width: calc(5 * 25px);
+
+        .hp-row {
+          display: contents;
+        }
+      }
+
+      .row-damage .hp,
+      .table-stats .use,
+      .use,
+      .upgrade-use {
+        width: 24px;
+        height: 24px;
+        line-height: 24px;
+        font-size: 12px;
+        border-color: #104c80;
+        background: #dfe7f1;
+      }
+
+      .row-damage,
+      .table-stats,
+      .upgrades {
+        .filled {
+          background: #272727;
+          border-color: #272727;
+          color: #fff;
+        }
+      }
+
+      .upgrade-use,
+      .hp,
+      .use {
+        &:hover {
+          background: #bfbfbf;
+
+          &.filled {
+            background: #70808c;
+          }
+
+          cursor: pointer;
+        }
+
+        user-select: none;
+      }
+
+      .table-card-stats tbody td,
+      .table-card-stats thead th,
+      .unit-info .hev-size,
+      .unit-info .hev-team,
+      .crit-heading,
+      .crit-content,
+      .card-name,
+      .upgrades,
+      .card-description,
+      .table-stats tbody td,
+      .table-stats thead th,
+      .section-heading {
+        font-size: 100%;
+      }
+    }
+  }
+}
+
+@include media-breakpoint-down(sm) {
+  .play-container {
+
+    .output-container .game-card {
+      .card-name {
+        font-size: 130%;
+        font-weight: 500;
+      }
+
+      .card-content-container {
+        padding: 0;
+      }
+    }
+
+    .game-card {
+      outline: 0;
+      border: 0;
+      border-top: 1px solid #8c8c8c;
+      padding: 1rem 0.5rem;
+    }
+
+    .section-container {
+      padding: 0;
+
+      > .row {
+        margin-left: 0;
+        margin-right: 0;
+      }
+    }
+
+    .play-header {
+      padding-left: 1rem;
+      padding-right: 1rem;
+    }
+
+    .output-container {
+      .page-card-grid-flex {
+        display: block;
+
+        .game-card.card-support-asset-size-1,
+        .game-card.card-support-asset-size-2 {
+          width: auto;
+          border: 0;
+          border-top: 1px solid #b8b8b8;
+          display: block;
+          padding: 1rem 0.5rem;
+        }
+      }
+    }
+  }
+}

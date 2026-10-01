@@ -10,6 +10,8 @@ import { useTeamStore } from '../../store/team-store';
 import ModalDataUrlImport from './Modal/ModalDataUrlImport.vue';
 import ModalImportMechs from './Modal/ModalImportMechs.vue';
 
+defineOptions({ inheritAttrs: false });
+
 const fileUpload = useTemplateRef<HTMLInputElement>('file-upload');
 const fileImport = useTemplateRef<HTMLInputElement>('file-import');
 const modalImportMechs = useTemplateRef<typeof ModalImportMechs>('modal-import-mechs');
@@ -59,6 +61,7 @@ function importHevPack(quickBuild: HevPack) {
     variant="secondary"
     size="sm"
     class="d-inline-block ms-1"
+    v-bind="$attrs"
   >
     <template #button-content>
       Load
