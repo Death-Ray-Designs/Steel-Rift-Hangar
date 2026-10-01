@@ -19,42 +19,44 @@ provide('has_garrison', has_garrison);
 
 </script>
 <template>
-  <table class="table table-striped">
-    <thead>
-    <tr>
-      <th>
-        {{ unit.unit_type.display_name }}
-      </th>
-      <th class="text-end">
-        Move
-      </th>
-      <th class="text-end" v-if="has_jump">
-        Jump
-      </th>
-      <th class="text-end" v-if="has_armor">
-        Armor
-      </th>
-      <th class="text-end" v-if="has_structure">
-        Structure
-      </th>
-      <th class="text-end" v-if="!!unit.max_vehicle_tons">Tons</th>
-      <th>
-        Weapons
-      </th>
-      <th v-if="has_garrison">
-        Garrison
-      </th>
-      <th>
-        Traits
-      </th>
-    </tr>
-    </thead>
-    <tbody class="table-group-divider">
-    <UnitVehicleItem
-      v-for="item in unit.vehicles" :key="item.id"
-      :support-asset-attachment-id="supportAssetAttachmentId"
-      :support-asset-vehicle-attachment-id="item.id"
-    />
-    </tbody>
-  </table>
+  <div class="table-responsive">
+    <table class="table table-striped">
+      <thead>
+      <tr>
+        <th>
+          {{ unit.unit_type.display_name }}
+        </th>
+        <th class="text-end">
+          Move
+        </th>
+        <th class="text-end" v-if="has_jump">
+          Jump
+        </th>
+        <th class="text-end" v-if="has_armor">
+          Armor
+        </th>
+        <th class="text-end" v-if="has_structure">
+          Structure
+        </th>
+        <th class="text-end" v-if="!!unit.max_vehicle_tons">Tons</th>
+        <th>
+          Weapons
+        </th>
+        <th v-if="has_garrison">
+          Garrison
+        </th>
+        <th>
+          Traits
+        </th>
+      </tr>
+      </thead>
+      <tbody class="table-group-divider">
+      <UnitVehicleItem
+        v-for="item in unit.vehicles" :key="item.id"
+        :support-asset-attachment-id="supportAssetAttachmentId"
+        :support-asset-vehicle-attachment-id="item.id"
+      />
+      </tbody>
+    </table>
+  </div>
 </template>

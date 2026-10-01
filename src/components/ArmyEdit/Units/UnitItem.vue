@@ -190,10 +190,12 @@ const garrisonWeapons = computed(() => unitStore.getUnitAllGarrisonWeaponsInfo(s
         </div>
 
         <UnitVehicles :support-asset-attachment-id="supportAssetAttachmentId" v-if="info.vehicles.length" />
-        <table class="table table-striped">
-          <UnitWeapons title="Unit Weapons Reference" :weapons="unitWeapons" :damage-suffix="unitDamageSuffix" />
-          <UnitWeapons title="Garrison Weapons Reference" :weapons="garrisonWeapons" :damage-suffix="DAMAGE_SUFFIX" />
-        </table>
+        <div class="table-responsive">
+          <table class="table table-striped">
+            <UnitWeapons title="Unit Weapons Reference" :weapons="unitWeapons" :damage-suffix="unitDamageSuffix" />
+            <UnitWeapons title="Garrison Weapons Reference" :weapons="garrisonWeapons" :damage-suffix="DAMAGE_SUFFIX" />
+          </table>
+        </div>
         <UnitGarrisonUnits :support-asset-attachment-id="supportAssetAttachmentId" v-if="garrisonUnitChoices.length" />
       </div>
     </BCollapse>

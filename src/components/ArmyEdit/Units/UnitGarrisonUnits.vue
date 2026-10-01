@@ -14,55 +14,58 @@ const garrisonUnitChoices = computed(() => unitStore.getUnitAttachmentAllGarriso
 
 </script>
 <template>
-  <table class="table table-striped">
-    <thead>
-    <tr>
-      <th>
-        Garrison Unit Reference
-      </th>
-      <th class="text-end">
-        Move
-      </th>
-      <th class="text-end">
-        Armor
-      </th>
-      <th class="text-end">
-        Structure
-      </th>
-      <th>
-        Weapons
-      </th>
-      <th>
-        Traits
-      </th>
-    </tr>
-    </thead>
-    <tbody class="table-group-divider">
-    <tr v-for="unitInfo in garrisonUnitChoices" :key="unitInfo.id">
-      <td class="text-nowrap">
-        {{ unitInfo.display_name }}
-      </td>
-      <td class="text-end">
-        <format-inches :value="unitInfo.move" />
-      </td>
-      <td class="text-end">
-        {{ unitInfo.armor }}
-      </td>
-      <td class="text-end">
-        {{ unitInfo.structure }}
-      </td>
-      <td :class="{'table-btn-cell': unitInfo.weapons.length}">
-        <template v-if="unitInfo.weapons.length">
-          <template v-for="(weapon, index) in unitInfo.weapons" :key="weapon.id">
-            <UnitWeaponToolTip :weapon="weapon" />
-            <span v-if="index !== unitInfo.weapons.length - 1">, </span>
+  <div class="table-responsive">
+
+    <table class="table table-striped">
+      <thead>
+      <tr>
+        <th>
+          Garrison Unit Reference
+        </th>
+        <th class="text-end">
+          Move
+        </th>
+        <th class="text-end">
+          Armor
+        </th>
+        <th class="text-end">
+          Structure
+        </th>
+        <th>
+          Weapons
+        </th>
+        <th>
+          Traits
+        </th>
+      </tr>
+      </thead>
+      <tbody class="table-group-divider">
+      <tr v-for="unitInfo in garrisonUnitChoices" :key="unitInfo.id">
+        <td class="text-nowrap">
+          {{ unitInfo.display_name }}
+        </td>
+        <td class="text-end">
+          <format-inches :value="unitInfo.move" />
+        </td>
+        <td class="text-end">
+          {{ unitInfo.armor }}
+        </td>
+        <td class="text-end">
+          {{ unitInfo.structure }}
+        </td>
+        <td :class="{'table-btn-cell': unitInfo.weapons.length}">
+          <template v-if="unitInfo.weapons.length">
+            <template v-for="(weapon, index) in unitInfo.weapons" :key="weapon.id">
+              <UnitWeaponToolTip :weapon="weapon" />
+              <span v-if="index !== unitInfo.weapons.length - 1">, </span>
+            </template>
           </template>
-        </template>
-      </td>
-      <td>
-        <TraitList :traits="unitInfo.traits" />
-      </td>
-    </tr>
-    </tbody>
-  </table>
+        </td>
+        <td>
+          <TraitList :traits="unitInfo.traits" />
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
 </template>
