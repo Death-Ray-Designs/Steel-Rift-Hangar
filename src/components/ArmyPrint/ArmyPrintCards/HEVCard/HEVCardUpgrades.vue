@@ -8,7 +8,6 @@ import { useMechStore } from '../../../../store/mech-store';
 import { useTeamStore } from '../../../../store/team-store';
 import type { TraitInfo } from '../../../../types';
 import SvgIcon from '../../../UI/Icon.vue';
-import BtnPlusMinus from '../../../ArmyPlay/BtnPlusMinus.vue';
 import { usePlayStore } from '../../../../store/play-store';
 
 const mechStore = useMechStore();
@@ -103,6 +102,17 @@ const orders = computed(() => {
 });
 
 watch([upgrades, orders, armorUpgradesList], () => emit('contentChanged'), { flush: 'post' });
+
+function isUpgradeUsed(upgradeAttachmentId: number | undefined, index: number) {
+  return upgradeAttachmentId !== undefined && index <= playStore.getHevUpgradeTimesUsed(mechId, upgradeAttachmentId);
+}
+
+function clickUpgradeUse(upgradeAttachmentId: number | undefined, index: number) {
+  if (!play) return;
+  if (upgradeAttachmentId === undefined) return;
+
+  isUpgradeUsed(upgradeAttachmentId, index) ? playStore.removeHevUpgradeTimesUsed(mechId, upgradeAttachmentId) : playStore.addHevUpgradeTimesUsed(mechId, upgradeAttachmentId);
+}
 </script>
 <template>
   <div v-if="upgrades.length || armorUpgrades.length">
@@ -123,22 +133,13 @@ watch([upgrades, orders, armorUpgradesList], () => emit('contentChanged'), { flu
         </template>
         <template v-else>
           <template v-if="upgrade.max_uses">&nbsp;<span
-              v-for="i in upgrade.max_uses"
-              :key="i"
-              class="upgrade-use"
-              :class="{used: upgrade.upgrade_attachment_id !== undefined && i <= playStore.getHevUpgradeTimesUsed(mechId, upgrade.upgrade_attachment_id)}"
-            >&nbsp;</span>
+            v-for="i in upgrade.max_uses"
+            :key="i"
+            class="upgrade-use"
+            :class="{filled: isUpgradeUsed(upgrade.upgrade_attachment_id, i)}"
+            @click="clickUpgradeUse(upgrade.upgrade_attachment_id, i)"
+          >&nbsp;</span>
           </template>
-          <span class="d-inline-block">
-
-          <BtnPlusMinus
-            v-if="play && upgrade.max_uses && upgrade.upgrade_attachment_id !== undefined"
-            inline
-            class="my-1"
-            @add="playStore.addHevUpgradeTimesUsed(mechId, upgrade.upgrade_attachment_id)"
-            @remove="playStore.removeHevUpgradeTimesUsed(mechId, upgrade.upgrade_attachment_id)"
-          />
-          </span>
           <template v-if="upgrade.traits?.length">:</template>
           <template v-for="trait in upgrade.traits">
             {{ trait.display_name }}

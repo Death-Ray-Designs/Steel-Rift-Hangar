@@ -27,7 +27,7 @@ const supportAssetCards = computed((): (SupportAssetUnitCardType | SupportAssetW
   ];
 });
 const armyStore = useArmyListStore();
-provide('play', true)
+provide('play', true);
 </script>
 <template>
   <div
@@ -35,45 +35,48 @@ provide('play', true)
     data-bs-theme="light"
   >
     <div class="output-container">
-      <h4 class="px-3">{{ armyStore.name ?? 'Unnamed Army List' }}</h4>
+      <div class="container-fluid gx-0">
 
-      <div
-        v-for="team in hevCardsByTeam"
-        :key="team.teamName"
-        class="section-container"
-      >
-        <h5 class="play-header">{{ team.teamName }}</h5>
+        <h4 class="px-3">{{ armyStore.name ?? 'Unnamed Army List' }}</h4>
 
-        <div class="row gx-1 row-cols-xl-5 row-cols-lg-4 row-cols-md-3 row-cols-sm-2 row-cols-1">
+        <div
+          v-for="team in hevCardsByTeam"
+          :key="team.teamName"
+          class="section-container"
+        >
+          <h5 class="play-header">{{ team.teamName }}</h5>
 
-          <div
-            class="col"
-            v-for="item in team.cards"
-            :key="item.mechId"
-          >
-            <HEVCard :mech-id="item.mechId"/>
+          <div class="row gx-1 row-cols-lg-4 row-cols-md-3 row-cols-sm-2 row-cols-1">
+
+            <div
+              class="col"
+              v-for="item in team.cards"
+              :key="item.mechId"
+            >
+              <HEVCard :mech-id="item.mechId"/>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div
-        class="section-container"
-        v-if="supportAssetCards.length"
-      >
-        <h5 class="play-header">Support Assets</h5>
-        <div class="page-card-grid-flex flex-wrap justify-content-center">
-          <template v-for="item in supportAssetCards">
-            <SupportAssetWeaponCard
-              v-if="item.type === 'support_asset_weapon'"
-              :key="`weapon-${item.supportAssetId}`"
-              :support-asset-id="item.supportAssetId"
-            />
-            <SupportAssetUnitCard
-              v-if="item.type === 'support_asset_unit'"
-              :key="`unit-${item.unitAttachmentId}`"
-              :unit-attachment-id="item.unitAttachmentId"
-            />
-          </template>
+        <div
+          class="section-container"
+          v-if="supportAssetCards.length"
+        >
+          <h5 class="play-header">Support Assets</h5>
+          <div class="page-card-grid-flex flex-wrap justify-content-center">
+            <template v-for="item in supportAssetCards">
+              <SupportAssetWeaponCard
+                v-if="item.type === 'support_asset_weapon'"
+                :key="`weapon-${item.supportAssetId}`"
+                :support-asset-id="item.supportAssetId"
+              />
+              <SupportAssetUnitCard
+                v-if="item.type === 'support_asset_unit'"
+                :key="`unit-${item.unitAttachmentId}`"
+                :unit-attachment-id="item.unitAttachmentId"
+              />
+            </template>
+          </div>
         </div>
       </div>
     </div>

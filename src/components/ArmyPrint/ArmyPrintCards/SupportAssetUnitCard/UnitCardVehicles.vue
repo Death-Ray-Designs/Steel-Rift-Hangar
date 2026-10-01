@@ -7,7 +7,6 @@ import type { Trait } from '../../../../types';
 import FormatInches from '../../../functional/format-inches.vue';
 import { formatCardRef } from '../../../functional/formatters.js';
 import UnitCardHalfHeader from './UnitCardHalfHeader.vue';
-import BtnPlusMinus from '../../../ArmyPlay/BtnPlusMinus.vue';
 import { usePlayStore } from '../../../../store/play-store';
 
 const { unitAttachmentId } = defineProps<{
@@ -58,6 +57,21 @@ function isArmorDamaged(damageKey: number, chunkIndex: number, index: number) {
   return chunkIndex * 4 + index < getUnitArmorDamage(unitAttachmentId, damageKey);
 }
 
+function clickArmorDamaged(itemId: number, chunkIndex: number, index: number) {
+  if (!play) return;
+  isArmorDamaged(itemId, chunkIndex, index) ? removeUnitArmorDamage(unitAttachmentId, itemId) : addUnitArmorDamage(unitAttachmentId, itemId);
+}
+
+function clickStructureDamaged(itemId: number, chunkIndex: number, index: number) {
+  if (!play) return;
+  isStructureDamaged(itemId, chunkIndex, index) ? removeUnitStructureDamage(unitAttachmentId, itemId) : addUnitStructureDamage(unitAttachmentId, itemId);
+}
+
+function clickWeaponUse(itemId: number, weaponIndex: number, i: number) {
+  if (!play) return;
+  i <= getUnitWeaponTimesUsed(unitAttachmentId, itemId, weaponIndex) ? removeUnitWeaponTimesUsed(unitAttachmentId, itemId, weaponIndex) : addUnitWeaponTimesUsed(unitAttachmentId, itemId, weaponIndex);
+}
+
 </script>
 <template>
   <template v-if="unit.vehicles.length">
@@ -104,53 +118,44 @@ function isArmorDamaged(damageKey: number, chunkIndex: number, index: number) {
           {{ item.display_name }}
         </td>
         <td class="text-end" v-if="hasMove">
-          <format-inches :value="item.move"/>
+          <format-inches :value="item.move" />
         </td>
         <td class="text-end" v-if="hasJump">
-          <format-inches :value="item.jump"/>
+          <format-inches :value="item.jump" />
         </td>
         <td class="text-start" v-if="hasArmor">
-          <BtnPlusMinus
-            v-if="play && item.armor"
-            class="mb-1"
-            @add="addUnitArmorDamage(unitAttachmentId, item.id)"
-            @remove="removeUnitArmorDamage(unitAttachmentId, item.id)"
-          />
-          <div class="text-nowrap" v-for="(chunk, chunkIndex) in statArray(item.armor)"><span
-            class="use use-armor"
-            :class="{used: isArmorDamaged(item.id, chunkIndex, i)}"
-            v-for="(_, i) in chunk"
-          >&nbsp;</span>
+          <div class="use-group use-group-stat">
+            <div class="text-nowrap" v-for="(chunk, chunkIndex) in statArray(item.armor)"><span
+              class="use use-armor"
+              :class="{filled: isArmorDamaged(item.id, chunkIndex, i)}"
+              @click="clickArmorDamaged(item.id, chunkIndex, i)"
+              v-for="(_, i) in chunk"
+            >&nbsp;</span>
+            </div>
           </div>
         </td>
         <td class="text-start">
-          <BtnPlusMinus
-            v-if="play && item.structure"
-            class="mb-1"
-            @add="addUnitStructureDamage(unitAttachmentId, item.id)"
-            @remove="removeUnitStructureDamage(unitAttachmentId, item.id)"
-          />
-          <div class="text-nowrap" v-for="(chunk, chunkIndex) in statArray(item.structure)"><span
-            class="use use-structure"
-            :class="{used: isStructureDamaged(item.id, chunkIndex, i)}"
-            v-for="(_, i) in chunk"
-          >&nbsp;</span>
+          <div class="use-group use-group-stat">
+            <div class="text-nowrap" v-for="(chunk, chunkIndex) in statArray(item.structure)"><span
+              class="use use-structure"
+              :class="{filled: isStructureDamaged(item.id, chunkIndex, i)}"
+              @click="clickStructureDamaged(item.id, chunkIndex, i)"
+              v-for="(_, i) in chunk"
+            >&nbsp;</span>
+            </div>
           </div>
         </td>
         <td class="text-start small">
           <div v-for="(weapon, index) in item.weapons">
             {{ weapon.display_name }}
-            <BtnPlusMinus
-              v-if="play && weapon.max_uses"
-              @add="addUnitWeaponTimesUsed(unitAttachmentId, item.id, index)"
-              @remove="removeUnitWeaponTimesUsed(unitAttachmentId, item.id, index)"
-            />
-            <span class="text-nowrap" v-if="weapon.max_uses">&nbsp;<span
-              :class="{used: i <= getUnitWeaponTimesUsed(unitAttachmentId, item.id, index)}"
+            <template v-if="weapon.max_uses">&nbsp;<span class="text-nowrap"><span
+              :class="{filled: i <= getUnitWeaponTimesUsed(unitAttachmentId, item.id, index)}"
               class="use use-weapon" v-for="i in weapon.max_uses"
-            >&nbsp;</span></span><span
-            v-if="index !== item.weapons.length - 1"
-          >, </span>
+              @click="clickWeaponUse(item.id, index, i)"
+            >&nbsp;</span></span></template>
+            <span
+              v-if="index !== item.weapons.length - 1"
+            >, </span>
           </div>
         </td>
         <td v-if="hasGarrisonWithRefIds" class="text-end small">

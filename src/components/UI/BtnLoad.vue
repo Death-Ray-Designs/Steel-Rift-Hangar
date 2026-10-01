@@ -10,7 +10,7 @@ import { useTeamStore } from '../../store/team-store';
 import ModalDataUrlImport from './Modal/ModalDataUrlImport.vue';
 import ModalImportMechs from './Modal/ModalImportMechs.vue';
 
-defineOptions({ inheritAttrs: false })
+defineOptions({ inheritAttrs: false });
 
 const fileUpload = useTemplateRef<HTMLInputElement>('file-upload');
 const fileImport = useTemplateRef<HTMLInputElement>('file-import');

@@ -3,7 +3,7 @@ import logoSvg from '/steel-rift-logo.svg';
 import { BCollapse, BNavbarToggle } from 'bootstrap-vue-next';
 import BtnColorMode from './UI/BtnColorMode.vue';
 import { useRouteLayout } from '../composables/useRouteLayout';
-import { ROUTE_HOME, ROUTE_PLAY, ROUTE_PRINT } from '../router';
+import { ROUTE_HOME } from '../router';
 
 const { isPlayLayout } = useRouteLayout();
 </script>
@@ -23,9 +23,9 @@ const { isPlayLayout } = useRouteLayout();
 
           <template v-if="isPlayLayout">
             <router-link
-                :to="{ name: ROUTE_HOME }"
-                class="btn btn-sm btn-default"
-                activeClass="active"
+              :to="{ name: ROUTE_HOME }"
+              class="btn btn-sm btn-default"
+              activeClass="active"
             >
               Exit
             </router-link>
@@ -51,8 +51,10 @@ const { isPlayLayout } = useRouteLayout();
               </li>
             </ul>
             <div class="flex-grow-1">
-              <a class="btn btn-orange btn-sm ms-lg-2 small"
-                 href="https://deathraydesigns.com/product-category/minis/steel-rift/">Buy
+              <a
+                class="btn btn-orange btn-sm ms-lg-2 small"
+                href="https://deathraydesigns.com/product-category/minis/steel-rift/"
+              >Buy
                 Now</a>
             </div>
             <div class="d-flex">

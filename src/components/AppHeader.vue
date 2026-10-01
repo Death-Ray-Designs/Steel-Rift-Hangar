@@ -26,7 +26,7 @@ const { isPlayLayout } = useRouteLayout();
 </script>
 <template>
   <div class="sticky-top bg-body text-body border-bottom shadow app-header">
-    <Navbar/>
+    <Navbar />
     <div
       class="container-lg"
       v-if="!isPlayLayout"
@@ -76,12 +76,12 @@ const { isPlayLayout } = useRouteLayout();
                 />
               </span>
             </div>
-            <BtnArmyListValidation/>
+            <BtnArmyListValidation />
           </div>
           <div class="col-md-3 text-md-end header-btns">
             <template v-if="!isPlayLayout">
-              <BtnSave class="mt-2 align-middle"/>
-              <BtnLoad class="mt-2 align-middle"/>
+              <BtnSave class="mt-2 align-middle" />
+              <BtnLoad class="mt-2 align-middle" />
               <BButton
                 @click="resetModal = !resetModal"
                 size="sm"

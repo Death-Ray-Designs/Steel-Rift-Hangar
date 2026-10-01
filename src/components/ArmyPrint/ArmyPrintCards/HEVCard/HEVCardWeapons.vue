@@ -8,7 +8,6 @@ import { useMechStore } from '../../../../store/mech-store';
 import type { MechWeaponAttachmentInfo, TraitInfo } from '../../../../types';
 import DamageFormatter from '../../../UI/DamageFormatter.vue';
 import RangeFormatter from '../../../UI/RangeFormatter.vue';
-import BtnPlusMinus from '../../../ArmyPlay/BtnPlusMinus.vue';
 import { usePlayStore } from '../../../../store/play-store';
 
 const mechStore = useMechStore();
@@ -20,7 +19,9 @@ const { mechId } = defineProps<{
 }>();
 
 const weapons = computed(() => {
-  let results: (MechWeaponAttachmentInfo & { is_mine_drone?: boolean })[] = mechStore.getMechWeaponsAttachmentInfo(mechId);
+  let results: (MechWeaponAttachmentInfo & {
+    is_mine_drone?: boolean
+  })[] = mechStore.getMechWeaponsAttachmentInfo(mechId);
   let mineDroneUpgrade = findBy(mechStore.getMechUpgradesAttachmentInfo(mechId), 'upgrade_id', MECH_UPGRADE.MINEFIELD_DRONE_CARRIER_SYSTEM);
 
   if (mineDroneUpgrade) {
@@ -82,6 +83,11 @@ function removeUse(weapon: typeof weapons.value[number]) {
   }
 }
 
+function clickUse(weapon: typeof weapons.value[number], i: number) {
+  if (!play) return;
+  i <= getUses(weapon) ? removeUse(weapon) : addUse(weapon);
+}
+
 function getUses(weapon: typeof weapons.value[number]) {
   if (weapon.is_mine_drone) {
     return playStore.getHevUpgradeTimesUsed(mechId, weapon.id);
@@ -111,11 +117,6 @@ function getUses(weapon: typeof weapons.value[number]) {
         <div>
           {{ weapon.display_name }}
         </div>
-        <BtnPlusMinus
-          v-if="play && weapon.max_uses"
-          @add="addUse(weapon)"
-          @remove="removeUse(weapon)"
-        />
 
       </td>
       <td
@@ -128,9 +129,10 @@ function getUses(weapon: typeof weapons.value[number]) {
         >
           <span
             class="use use-weapon"
-            :class="{used: i <= getUses(weapon)}"
+            :class="{filled: i <= getUses(weapon)}"
             v-for="i in weapon.max_uses"
             :key="i"
+            @click="clickUse(weapon, i)"
           >&nbsp;</span>
         </span>
       </td>

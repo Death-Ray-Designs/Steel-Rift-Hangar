@@ -5,7 +5,6 @@ import { useSupportAssetUnitsStore } from '../../../../store/support-asset-units
 import FormatInches from '../../../functional/format-inches.vue';
 import { formatCardRef } from '../../../functional/formatters.js';
 import UnitCardHalfHeader from './UnitCardHalfHeader.vue';
-import BtnPlusMinus from '../../../ArmyPlay/BtnPlusMinus.vue';
 import { usePlayStore } from '../../../../store/play-store';
 
 const { unitAttachmentId } = defineProps<{
@@ -37,6 +36,21 @@ const {
   removeGarrisonStructureDamage,
   getGarrisonStructureDamage,
 } = usePlayStore();
+
+function clickArmor(vehicleId: number, garrisonIndex: number, i: number) {
+  if (!play) return;
+  i <= getGarrisonArmorDamage(unitAttachmentId, vehicleId, garrisonIndex) ? removeGarrisonArmorDamage(unitAttachmentId, vehicleId, garrisonIndex) : addGarrisonArmorDamage(unitAttachmentId, vehicleId, garrisonIndex);
+}
+
+function clickStructure(vehicleId: number, garrisonIndex: number, i: number) {
+  if (!play) return;
+  i <= getGarrisonStructureDamage(unitAttachmentId, vehicleId, garrisonIndex) ? removeGarrisonStructureDamage(unitAttachmentId, vehicleId, garrisonIndex) : addGarrisonStructureDamage(unitAttachmentId, vehicleId, garrisonIndex);
+}
+
+function clickWeapon(vehicleId: number, garrisonIndex: number, weaponIndex: number, i: number) {
+  if (!play) return;
+  i <= getGarrisonWeaponTimesUsed(unitAttachmentId, vehicleId, garrisonIndex, weaponIndex) ? removeGarrisonWeaponTimesUsed(unitAttachmentId, vehicleId, garrisonIndex, weaponIndex) : addGarrisonWeaponTimesUsed(unitAttachmentId, vehicleId, garrisonIndex, weaponIndex);
+}
 
 </script>
 <template>
@@ -83,36 +97,26 @@ const {
           {{ item.display_name }}
         </td>
         <td class="text-end">
-          <format-inches :value="item.move"/>
+          <format-inches :value="item.move" />
         </td>
         <td
           v-if="hasArmor"
           class="text-start"
         >
-          <BtnPlusMinus
-            v-if="play && item.armor"
-            class="mb-1"
-            @add="addGarrisonArmorDamage(unitAttachmentId, item.vehicle_id, item.garrison_index)"
-            @remove="removeGarrisonArmorDamage(unitAttachmentId, item.vehicle_id, item.garrison_index)"
-          />
-          <div class="text-nowrap" v-if="item.armor"><span
+          <div class="text-nowrap use-group use-group-stat" v-if="item.armor"><span
             class="use use-armor"
-            :class="{used: i <= getGarrisonArmorDamage(unitAttachmentId, item.vehicle_id, item.garrison_index)}"
+            :class="{filled: i <= getGarrisonArmorDamage(unitAttachmentId, item.vehicle_id, item.garrison_index)}"
             v-for="i in item.armor"
+            @click="clickArmor(item.vehicle_id, item.garrison_index, i)"
           >&nbsp;</span>
           </div>
         </td>
         <td class="text-start">
-          <BtnPlusMinus
-            v-if="play && item.structure"
-            class="mb-1"
-            @add="addGarrisonStructureDamage(unitAttachmentId, item.vehicle_id, item.garrison_index)"
-            @remove="removeGarrisonStructureDamage(unitAttachmentId, item.vehicle_id, item.garrison_index)"
-          />
-          <div class="text-nowrap" v-if="item.structure"><span
+          <div class="text-nowrap use-group use-group-stat" v-if="item.structure"><span
             class="use use-structure"
-            :class="{used: i <= getGarrisonStructureDamage(unitAttachmentId, item.vehicle_id, item.garrison_index)}"
+            :class="{filled: i <= getGarrisonStructureDamage(unitAttachmentId, item.vehicle_id, item.garrison_index)}"
             v-for="i in item.structure"
+            @click="clickStructure(item.vehicle_id, item.garrison_index, i)"
           >&nbsp;</span>
           </div>
         </td>
@@ -122,14 +126,10 @@ const {
             v-for="(weapon, index) in item.weapons"
           >
             {{ weapon.display_name }}
-            <BtnPlusMinus
-              v-if="play && weapon.max_uses"
-              @add="addGarrisonWeaponTimesUsed(unitAttachmentId, item.vehicle_id, item.garrison_index, index)"
-              @remove="removeGarrisonWeaponTimesUsed(unitAttachmentId, item.vehicle_id, item.garrison_index, index)"
-            />
             <span class="text-nowrap" v-if="weapon.max_uses">&nbsp;<span
-              :class="{used: i <= getGarrisonWeaponTimesUsed(unitAttachmentId, item.vehicle_id, item.garrison_index, index)}"
+              :class="{filled: i <= getGarrisonWeaponTimesUsed(unitAttachmentId, item.vehicle_id, item.garrison_index, index)}"
               class="use use-weapon" v-for="i in weapon.max_uses"
+              @click="clickWeapon(item.vehicle_id, item.garrison_index, index, i)"
             >&nbsp;</span></span><span
             v-if="index !== item.weapons.length - 1"
           >, </span>

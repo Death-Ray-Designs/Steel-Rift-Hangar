@@ -5,7 +5,6 @@ import { FACTION_PERK } from '../../../../data/faction-perks.js';
 import { MECH_ARMOR_UPGRADE } from '../../../../data/mech-armor-upgrades';
 import { useFactionStore } from '../../../../store/faction-store';
 import { useMechStore } from '../../../../store/mech-store';
-import BtnPlusMinus from '../../../ArmyPlay/BtnPlusMinus.vue';
 import { usePlayStore } from '../../../../store/play-store';
 
 const mechStore = useMechStore();
@@ -135,102 +134,76 @@ const {
 const armorDamage = computed(() => getHevArmorDamage(mechId));
 const structureDamage = computed(() => getHevStructureDamage(mechId));
 
+function isArmorDamaged(index: number) {
+  return index + 1 <= armorDamage.value;
+}
+
+function isStructureDamaged(index: number) {
+  return index + 1 <= structureDamage.value;
+}
+
+function clickStructure(index: number) {
+  if (!play) return;
+  isStructureDamaged(index) ? removeHevStructureDamage(mechId) : addHevStructureDamage(mechId);
+}
+
+function clickArmor(index: number) {
+  if (!play) return;
+  isArmorDamaged(index) ? removeHevArmorDamage(mechId) : addHevArmorDamage(mechId);
+}
 </script>
 <template>
   <div class="row g-1 row-damage">
     <div class="col-5">
-
-      <div class="d-flex flex-wrap">
-        <div class="flex-shrink-1">
-          <BtnPlusMinus
-            v-if="play"
-            class="mt-1 pe-2 align-self-start armor-buttons d-none d-sm-inline-flex"
-            @add="addHevArmorDamage(mechId)"
-            @remove="removeHevArmorDamage(mechId)"
-          />
-          <div class="hp-heading">
-            ARMOR <small
-            class="fw-light"
-            v-if="armorUpgrades"
-          >
-            <template v-if="armorUpgrades.length === 1">
-              ({{ armorUpgrades[0].display_name }})
-            </template>
-            <template v-else-if="armorUpgrades.length > 1">
-              Multiple ({{ armorUpgrades.length }})
-            </template>
-          </small>
-          </div>
-          <div class="hp-container">
-            <div
-              class="hp-row"
-              v-for="row in armorHp"
-            >
+      <div class="hp-heading">
+        ARMOR <small
+        class="fw-light"
+        v-if="armorUpgrades"
+      >
+        <template v-if="armorUpgrades.length === 1">
+          ({{ armorUpgrades[0].display_name }})
+        </template>
+        <template v-else-if="armorUpgrades.length > 1">
+          Multiple ({{ armorUpgrades.length }})
+        </template>
+      </small>
+      </div>
+      <div class="hp-container">
+        <div class="hp-row" v-for="row in armorHp">
           <span
             class="hp hp-armor"
-            :class="{damaged:item.index + 1 <= armorDamage }"
+            :class="{filled: isArmorDamaged(item.index)}"
             v-for="item in row"
+            @click="clickArmor(item.index)"
           >
             <template v-if="item.type === 'extra_armor'">+</template>
           </span>
-            </div>
-          </div>
         </div>
-        <BtnPlusMinus
-          v-if="play"
-          class="mt-1 pe-2 align-self-start armor-buttons d-sm-none"
-          @add="addHevArmorDamage(mechId)"
-          @remove="removeHevArmorDamage(mechId)"
-        />
       </div>
     </div>
     <div class="col-7">
       <div class="d-flex">
-        <div class="flex-grow-1">
-          <div class="hp-structure d-flex flex-wrap">
-            <div class="flex-shrink-1 me-2">
-
-              <BtnPlusMinus
-                v-if="play"
-                class="align-self-start mt-1 d-none d-sm-inline-flex"
-                @add="addHevStructureDamage(mechId)"
-                @remove="removeHevStructureDamage(mechId)"
-              />
-
-              <div class="hp-heading ps-0">
-                STRUCTURE
-              </div>
-              <div class="hp-container">
-                <div
-                  class="hp-row"
-                  v-for="row in structureHp"
-                >
+        <div class="hp-structure flex-grow-1">
+          <div class="hp-heading ps-0">
+            STRUCTURE
+          </div>
+          <div class="hp-container">
+            <div class="hp-row" v-for="row in structureHp">
               <span
                 class="hp hp-structure"
-                :class="{damaged: item.index + 1 <= structureDamage}"
+                :class="{filled: isStructureDamaged(item.index)}"
                 v-for="item in row"
+                @click="clickStructure(item.index)"
               >
                 <span v-if="item.type">{{ item.type }}</span>
                 <span v-else>&nbsp;</span>
               </span>
-                </div>
-              </div>
-              <div
-                class="structure-systems"
-                v-if="structureSystem"
-              >
-                {{ structureSystem }}
-              </div>
             </div>
-            <BtnPlusMinus
-              v-if="play"
-              class="align-self-start mt-1 d-sm-none"
-              @add="addHevStructureDamage(mechId)"
-              @remove="removeHevStructureDamage(mechId)"
-            />
+          </div>
+          <div class="structure-systems" v-if="structureSystem">
+            {{ structureSystem }}
           </div>
         </div>
-
         <div class="crit-container">
           <div class="crit-heading">
             CRIT
@@ -270,8 +243,3 @@ const structureDamage = computed(() => getHevStructureDamage(mechId));
     </div>
   </div>
 </template>
-<style lang="scss">
-.armor-buttons {
-  padding-left: 5pt;
-}
-</style>
