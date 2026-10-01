@@ -54,12 +54,7 @@ const play = inject('play', false);
 
       <template v-if="hasGarrison">
         <div class="row g-2">
-          <div
-            :class="{
-              'col-6': !play,
-              'col-12 col-lg-6': play
-            }"
-          >
+          <div class="col-12 col-lg-6">
             <UnitCardVehicleHalf
               :unit-attachment-id="unitAttachmentId"
               :weapons="vehicleWeapons"
@@ -67,12 +62,7 @@ const play = inject('play', false);
               :orders="vehicleOrders"
             />
           </div>
-          <div
-            :class="{
-              'col-6': !play,
-              'col-12 col-lg-6': play
-            }"
-          >
+          <div class="col-12 col-lg-6">
             <UnitCardGarrisonInfantry :unit-attachment-id="unitAttachmentId" />
             <div class="row g-1">
               <div class="col-6 mt-0">
