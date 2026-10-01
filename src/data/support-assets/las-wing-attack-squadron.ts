@@ -9,8 +9,8 @@ import type { SupportAssetUnitDef, SupportAssetUnitVehicleDef } from './_support
 const baseStats = {
     move: 12,
     jump: 0,
-    armor: 2,
-    structure: 0,
+    armor: 1,
+    structure: 1,
 };
 
 export const LAS_WING_ATTACK_SQUADRON_DATA: Omit<SupportAssetUnitDef, 'id'> = {

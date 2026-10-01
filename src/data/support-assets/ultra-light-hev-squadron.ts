@@ -8,8 +8,8 @@ import type { SupportAssetUnitDef, SupportAssetUnitVehicleDef, UpgradePod } from
 export const ULTRA_LIGHT_HEV_SQUADRON = 'ULTRA_LIGHT_HEV_SQUADRON' as const;
 
 const baseStats = {
-    armor: 3,
-    structure: 0,
+    armor: 2,
+    structure: 1,
 };
 
 export const POD_MISSILE_PACK = 'POD_MISSILE_PACK' as const;
