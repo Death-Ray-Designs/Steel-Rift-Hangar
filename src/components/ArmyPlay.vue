@@ -2,10 +2,13 @@
 import HEVCard from './ArmyPrint/ArmyPrintCards/HEVCard.vue';
 import SupportAssetWeaponCard from './ArmyPrint/ArmyPrintCards/SupportAssetWeaponCard.vue';
 import SupportAssetUnitCard from './ArmyPrint/ArmyPrintCards/SupportAssetUnitCard.vue';
-import { computed, provide } from 'vue';
+import { computed, provide, ref } from 'vue';
 import { type SupportAssetUnitCardType, type SupportAssetWeaponCardType, useCardStore } from '../store/card-store';
 import { MECH_TEAM, MECH_TEAMS } from '../data/mech-teams';
 import { useArmyListStore } from '../store/army-list-store';
+import { resetStores } from '../store/helpers/store-save-load';
+import { BButton, BModal } from 'bootstrap-vue-next';
+import { usePlayStore } from '../store/play-store';
 
 const cardStore = useCardStore();
 
@@ -27,7 +30,11 @@ const supportAssetCards = computed((): (SupportAssetUnitCardType | SupportAssetW
   ];
 });
 const armyStore = useArmyListStore();
+const playStore = usePlayStore()
+
 provide('play', true);
+const resetModal = ref(false);
+
 </script>
 <template>
   <div
@@ -36,6 +43,26 @@ provide('play', true);
   >
     <div class="output-container">
       <div class="container-fluid gx-0">
+        <BButton
+          @click="resetModal = !resetModal"
+          size="sm"
+          variant="danger"
+          class="mx-3"
+        >
+          Reset
+        </BButton>
+        <BModal
+          v-model="resetModal"
+          centered
+          @ok="playStore.$reset()"
+          ok-variant="danger"
+          title="Reset Army List?"
+        >
+          <div class="lead">
+            Are you sure you want to clear all game data?
+          </div>
+        </BModal>
+
 
         <h4 class="px-3">{{ armyStore.name ?? 'Unnamed Army List' }}</h4>
 
