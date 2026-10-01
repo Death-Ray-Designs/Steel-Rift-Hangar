@@ -1,11 +1,12 @@
 import { defineScopeableStore } from 'pinia-scope';
-import { computed } from 'vue';
+import { computed, watch } from 'vue';
 import { useMechStore } from './mech-store';
 import { useSupportAssetUnitsStore } from './support-asset-units-store';
-import { make2KeyCounter, makeCounter, makeMultiKeyCounter } from './helpers/store-counters';
+import { makeMultiKeyCounter } from './helpers/store-counters';
 import { FACTION_PERK } from '../data/faction-perks';
 import { useFactionStore } from './faction-store';
 import { splitHevStructureIntoCriticalChunkSizes } from '../data/hev-helpers';
+import type { UnitAttachmentVehicleInfo } from '../data/support-assets/_support-asset-types';
 
 export const usePlayStore = defineScopeableStore('play-store', ({ scope }: { scope: string }) => {
         const mechStore = useMechStore(scope);
@@ -19,7 +20,8 @@ export const usePlayStore = defineScopeableStore('play-store', ({ scope }: { sco
             get: getHevWeaponTimesUsed,
             hasValues: hevHasWeaponUses,
             clear: clearHevWeaponUses,
-        } = make2KeyCounter<number, number>((mechId, weaponAttachmentId) => {
+            prune: pruneHevWeaponUses,
+        } = makeMultiKeyCounter<[number, number]>((mechId, weaponAttachmentId) => {
             return mechStore.getMechWeaponAttachmentInfo(mechId, weaponAttachmentId)?.max_uses ?? 0;
         });
 
@@ -30,7 +32,8 @@ export const usePlayStore = defineScopeableStore('play-store', ({ scope }: { sco
             get: getHevUpgradeTimesUsed,
             hasValues: hevHasUpgradeUses,
             clear: clearHevUpgradeUses,
-        } = make2KeyCounter<number, number>((mechId, upgradeAttachmentId) => {
+            prune: pruneHevUpgradeUses,
+        } = makeMultiKeyCounter<[number, number]>((mechId, upgradeAttachmentId) => {
             return mechStore.getMechUpgradeAttachmentInfo(mechId, upgradeAttachmentId)?.max_uses ?? 0;
         });
 
@@ -41,6 +44,7 @@ export const usePlayStore = defineScopeableStore('play-store', ({ scope }: { sco
             get: getUnitWeaponTimesUsed,
             hasValues: unitHasWeaponUses,
             clear: clearUnitWeaponUses,
+            prune: pruneUnitWeaponUses,
         } = makeMultiKeyCounter<[number, number, number]>((unitAttachmentId, vehicleAttachmentId, weaponIndex) => {
             const vehicle = unitStore.getUnitAttachmentVehicleInfo(unitAttachmentId, vehicleAttachmentId);
             return vehicle?.weapons[weaponIndex]?.max_uses ?? 0;
@@ -53,7 +57,8 @@ export const usePlayStore = defineScopeableStore('play-store', ({ scope }: { sco
             get: getHevStructureDamage,
             hasValues: hevHasStructureDamage,
             clear: clearHevStructureDamage,
-        } = makeCounter<number>((mechId) => {
+            prune: pruneHevStructureDamage,
+        } = makeMultiKeyCounter<[number]>((mechId) => {
             return mechStore.getMechInfo(mechId)?.structure_stat ?? 0;
         });
 
@@ -64,7 +69,8 @@ export const usePlayStore = defineScopeableStore('play-store', ({ scope }: { sco
             get: getHevArmorDamage,
             hasValues: hevHasArmorDamage,
             clear: clearHevArmorDamage,
-        } = makeCounter<number>((mechId) => {
+            prune: pruneHevArmorDamage,
+        } = makeMultiKeyCounter<[number]>((mechId) => {
             return mechStore.getMechInfo(mechId)?.armor_stat ?? 0;
         });
 
@@ -75,7 +81,8 @@ export const usePlayStore = defineScopeableStore('play-store', ({ scope }: { sco
             get: getUnitStructureDamage,
             hasValues: unitHasStructureDamage,
             clear: clearUnitStructureDamage,
-        } = make2KeyCounter<number, number>((unitAttachmentId, vehicleAttachmentId) => {
+            prune: pruneUnitStructureDamage,
+        } = makeMultiKeyCounter<[number, number]>((unitAttachmentId, vehicleAttachmentId) => {
             return unitStore.getUnitAttachmentVehicleInfo(unitAttachmentId, vehicleAttachmentId)?.structure ?? 0;
         });
 
@@ -86,7 +93,8 @@ export const usePlayStore = defineScopeableStore('play-store', ({ scope }: { sco
             get: getUnitArmorDamage,
             hasValues: unitHasArmorDamage,
             clear: clearUnitArmorDamage,
-        } = make2KeyCounter<number, number>((unitAttachmentId, vehicleAttachmentId) => {
+            prune: pruneUnitArmorDamage,
+        } = makeMultiKeyCounter<[number, number]>((unitAttachmentId, vehicleAttachmentId) => {
             return unitStore.getUnitAttachmentVehicleInfo(unitAttachmentId, vehicleAttachmentId)?.armor ?? 0;
         });
 
@@ -101,6 +109,7 @@ export const usePlayStore = defineScopeableStore('play-store', ({ scope }: { sco
             get: getGarrisonWeaponTimesUsed,
             hasValues: garrisonHasWeaponUses,
             clear: clearGarrisonWeaponUses,
+            prune: pruneGarrisonWeaponUses,
         } = makeMultiKeyCounter<[number, number, number, number]>((unitAttachmentId, vehicleAttachmentId, garrisonIndex, weaponIndex) => {
             return getGarrisonUnit(unitAttachmentId, vehicleAttachmentId, garrisonIndex)?.weapons[weaponIndex]?.max_uses ?? 0;
         });
@@ -112,6 +121,7 @@ export const usePlayStore = defineScopeableStore('play-store', ({ scope }: { sco
             get: getGarrisonStructureDamage,
             hasValues: garrisonHasStructureDamage,
             clear: clearGarrisonStructureDamage,
+            prune: pruneGarrisonStructureDamage,
         } = makeMultiKeyCounter<[number, number, number]>((unitAttachmentId, vehicleAttachmentId, garrisonIndex) => {
             return getGarrisonUnit(unitAttachmentId, vehicleAttachmentId, garrisonIndex)?.structure ?? 0;
         });
@@ -123,11 +133,113 @@ export const usePlayStore = defineScopeableStore('play-store', ({ scope }: { sco
             get: getGarrisonArmorDamage,
             hasValues: garrisonHasArmorDamage,
             clear: clearGarrisonArmorDamage,
+            prune: pruneGarrisonArmorDamage,
         } = makeMultiKeyCounter<[number, number, number]>((unitAttachmentId, vehicleAttachmentId, garrisonIndex) => {
             return getGarrisonUnit(unitAttachmentId, vehicleAttachmentId, garrisonIndex)?.armor ?? 0;
         });
 
-        // @TODO when navigating to edit mode and gameStarted show warning modal about play state
+        // each slot map is key => tag of what currently occupies that slot
+        // play state is pruned when its slot is removed or the slot's tag changes (e.g. a unit weapon choice is swapped)
+        function pruneOnSlotChange(getSlots: () => Record<string, string>, prune: (shouldPrune: (key: string) => boolean) => void) {
+            watch(getSlots, (current, previous) => {
+                prune(key => {
+                    const slotRemoved = !(key in current);
+                    const slotChanged = key in previous && previous[key] !== current[key];
+                    return slotRemoved || slotChanged;
+                });
+            });
+        }
+
+        function hevSlots() {
+            const slots: Record<string, string> = {};
+            mechStore.mechs.forEach(mech => {
+                slots[mech.id] = '';
+            });
+            return slots;
+        }
+
+        function hevWeaponSlots() {
+            const slots: Record<string, string> = {};
+            mechStore.mechs.forEach(mech => {
+                mech.weapons.forEach(weapon => {
+                    slots[`${mech.id}-${weapon.id}`] = weapon.weapon_id;
+                });
+            });
+            return slots;
+        }
+
+        function hevUpgradeSlots() {
+            const slots: Record<string, string> = {};
+            mechStore.mechs.forEach(mech => {
+                mech.upgrades.forEach(upgrade => {
+                    slots[`${mech.id}-${upgrade.id}`] = upgrade.upgrade_id;
+                });
+            });
+            return slots;
+        }
+
+        function forEachUnitVehicle(callback: (unitAttachmentId: number, vehicle: UnitAttachmentVehicleInfo) => void) {
+            unitStore.support_asset_units.forEach(unit => {
+                unit.vehicles.forEach(vehicleAttachment => {
+                    const vehicle = unitStore.getUnitAttachmentVehicleInfo(unit.id, vehicleAttachment.id);
+                    if (vehicle) callback(unit.id, vehicle);
+                });
+            });
+        }
+
+        function unitSlots() {
+            const slots: Record<string, string> = {};
+            forEachUnitVehicle((unitAttachmentId, vehicle) => {
+                slots[`${unitAttachmentId}-${vehicle.id}`] = vehicle.vehicle_id;
+            });
+            return slots;
+        }
+
+        function unitWeaponSlots() {
+            const slots: Record<string, string> = {};
+            forEachUnitVehicle((unitAttachmentId, vehicle) => {
+                vehicle.weapons.forEach((weapon, weaponIndex) => {
+                    slots[`${unitAttachmentId}-${vehicle.id}-${weaponIndex}`] = weapon.id;
+                });
+            });
+            return slots;
+        }
+
+        function garrisonSlots() {
+            const slots: Record<string, string> = {};
+            forEachUnitVehicle((unitAttachmentId, vehicle) => {
+                vehicle.garrison_units.forEach((garrisonUnit, garrisonIndex) => {
+                    slots[`${unitAttachmentId}-${vehicle.id}-${garrisonIndex}`] = garrisonUnit.id;
+                });
+            });
+            return slots;
+        }
+
+        function garrisonWeaponSlots() {
+            const slots: Record<string, string> = {};
+            forEachUnitVehicle((unitAttachmentId, vehicle) => {
+                vehicle.garrison_units.forEach((garrisonUnit, garrisonIndex) => {
+                    garrisonUnit.weapons.forEach((_, weaponIndex) => {
+                        slots[`${unitAttachmentId}-${vehicle.id}-${garrisonIndex}-${weaponIndex}`] = garrisonUnit.id;
+                    });
+                });
+            });
+            return slots;
+        }
+
+        pruneOnSlotChange(hevSlots, pruneHevStructureDamage);
+        pruneOnSlotChange(hevSlots, pruneHevArmorDamage);
+        pruneOnSlotChange(hevWeaponSlots, pruneHevWeaponUses);
+        pruneOnSlotChange(hevUpgradeSlots, pruneHevUpgradeUses);
+
+        pruneOnSlotChange(unitSlots, pruneUnitStructureDamage);
+        pruneOnSlotChange(unitSlots, pruneUnitArmorDamage);
+        pruneOnSlotChange(unitWeaponSlots, pruneUnitWeaponUses);
+
+        pruneOnSlotChange(garrisonSlots, pruneGarrisonStructureDamage);
+        pruneOnSlotChange(garrisonSlots, pruneGarrisonArmorDamage);
+        pruneOnSlotChange(garrisonWeaponSlots, pruneGarrisonWeaponUses);
+
         const gameStarted = computed(() => {
             return hevHasWeaponUses()
                 || hevHasUpgradeUses()

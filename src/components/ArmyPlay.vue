@@ -6,9 +6,9 @@ import { computed, provide, ref } from 'vue';
 import { type SupportAssetUnitCardType, type SupportAssetWeaponCardType, useCardStore } from '../store/card-store';
 import { MECH_TEAM, MECH_TEAMS } from '../data/mech-teams';
 import { useArmyListStore } from '../store/army-list-store';
-import { resetStores } from '../store/helpers/store-save-load';
 import { BButton, BModal } from 'bootstrap-vue-next';
 import { usePlayStore } from '../store/play-store';
+import { onBeforeRouteLeave, type RouteLocationNormalized, useRouter } from 'vue-router';
 
 const cardStore = useCardStore();
 
@@ -30,10 +30,28 @@ const supportAssetCards = computed((): (SupportAssetUnitCardType | SupportAssetW
   ];
 });
 const armyStore = useArmyListStore();
-const playStore = usePlayStore()
+const playStore = usePlayStore();
 
 provide('play', true);
 const resetModal = ref(false);
+
+const router = useRouter();
+const leaveModal = ref(false);
+let leaveTarget: RouteLocationNormalized | null = null;
+let leaveConfirmed = false;
+
+onBeforeRouteLeave((to) => {
+  if (leaveConfirmed || !playStore.gameStarted) return true;
+  leaveTarget = to;
+  leaveModal.value = true;
+  return false;
+});
+
+function confirmLeave() {
+  if (!leaveTarget) return;
+  leaveConfirmed = true;
+  router.push(leaveTarget.fullPath);
+}
 
 </script>
 <template>
@@ -63,6 +81,35 @@ const resetModal = ref(false);
           </div>
         </BModal>
 
+        <BModal
+          v-model="leaveModal"
+          centered
+          @ok="confirmLeave"
+          ok-title="Leave Play Mode"
+          cancel-title="Stay"
+          title="Game in Progress"
+        >
+          <p>
+            Game data (damage and weapon/upgrade uses) is saved and will still be here when you come back.
+            Changes to the army list may affect it:
+          </p>
+          <ul>
+            <li>
+              Removing an HEV, weapon, upgrade, support asset or vehicle clears its game data.
+            </li>
+            <li>
+              Changing a vehicle's weapon choice, upgrade pod or garrison squad clears the game data for that weapon or
+              squad.
+            </li>
+            <li>
+              Changes that lower a maximum (e.g. HEV size, structure/armor mods or faction perks) keep the game data.
+              If it is now over the maximum it is capped the next time you click it.
+            </li>
+            <li>
+              Loading or resetting an army list clears all game data.
+            </li>
+          </ul>
+        </BModal>
 
         <h4 class="px-3">{{ armyStore.name ?? 'Unnamed Army List' }}</h4>
 
@@ -80,7 +127,7 @@ const resetModal = ref(false);
               v-for="item in team.cards"
               :key="item.mechId"
             >
-              <HEVCard :mech-id="item.mechId"/>
+              <HEVCard :mech-id="item.mechId" />
             </div>
           </div>
         </div>

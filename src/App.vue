@@ -2,6 +2,7 @@
 import { BModalOrchestrator, BToastOrchestrator, useColorMode, useModalController } from 'bootstrap-vue-next';
 import { h, onErrorCaptured, onMounted, provide } from 'vue';
 import AppHeader from './components/AppHeader.vue';
+import { usePlayStore } from './store/play-store';
 
 const { create } = useModalController();
 onErrorCaptured((error) => {
@@ -26,6 +27,10 @@ const mode = useColorMode({
   persist: true,
 } as any);
 provide('color_mode', mode);
+
+// create the play store at startup so its watchers see every army list edit
+// and clear play state for removed or swapped records, even when play mode is not open
+usePlayStore();
 
 </script>
 <template>

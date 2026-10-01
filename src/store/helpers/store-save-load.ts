@@ -69,6 +69,8 @@ export function loadSaveFileData(data: any, scope = '') {
             store.afterHydrate();
         }
     });
+
+    usePlayStore(scope).$reset();
 }
 
 export function migrateLoadData(data: any) {
