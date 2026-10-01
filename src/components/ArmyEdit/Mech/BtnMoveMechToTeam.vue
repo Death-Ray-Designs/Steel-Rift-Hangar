@@ -34,7 +34,7 @@ const currentTeamId = computed({
 <template>
   <BDropdown
     variant="secondary"
-    class="d-inline-block"
+    class="btn-move-dropdown"
     no-caret
   >
     <template #button-content>
@@ -43,3 +43,13 @@ const currentTeamId = computed({
     <TeamDropDownItems v-model="currentTeamId" />
   </BDropdown>
 </template>
+<style lang="scss">
+.btn-move-dropdown {
+  display: flex;
+  align-items: stretch;
+
+  > .btn {
+    height: 100%;
+  }
+}
+</style>

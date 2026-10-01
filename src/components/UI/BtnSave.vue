@@ -40,7 +40,7 @@ function saveToUrl() {
   <BDropdown
     variant="secondary"
     size="sm"
-    class="d-inline-block"
+    class="d-inline-block ps-2"
   >
     <template #button-content>
       Save
