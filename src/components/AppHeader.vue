@@ -79,18 +79,16 @@ const { isPlayLayout } = useRouteLayout();
             <BtnArmyListValidation />
           </div>
           <div class="col-md-3 text-md-end header-btns">
-            <template v-if="!isPlayLayout">
-              <BtnSave class="mt-2 align-middle" />
-              <BtnLoad class="mt-2 align-middle" />
-              <BButton
-                @click="resetModal = !resetModal"
-                size="sm"
-                variant="danger"
-                class="ms-1 mt-2 d-inline-block"
-              >
-                Reset
-              </BButton>
-            </template>
+            <BtnSave class="mt-2 align-middle" />
+            <BtnLoad class="mt-2 align-middle" />
+            <BButton
+              @click="resetModal = !resetModal"
+              size="sm"
+              variant="danger"
+              class="ms-1 mt-2 d-inline-block"
+            >
+              Reset
+            </BButton>
             <div
               class="btn-group d-inline-block ms-1 mt-2"
               role="group"

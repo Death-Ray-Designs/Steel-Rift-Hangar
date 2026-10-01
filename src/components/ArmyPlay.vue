@@ -67,14 +67,14 @@ function confirmLeave() {
           variant="danger"
           class="mx-3"
         >
-          Reset
+          Clear
         </BButton>
         <BModal
           v-model="resetModal"
           centered
           @ok="playStore.$reset()"
           ok-variant="danger"
-          title="Reset Army List?"
+          title="Clear Play State"
         >
           <div class="lead">
             Are you sure you want to clear all game data?
@@ -111,7 +111,7 @@ function confirmLeave() {
           </ul>
         </BModal>
 
-        <h4 class="px-3">{{ armyStore.name ?? 'Unnamed Army List' }}</h4>
+        <h4 class="px-3">{{ armyStore.name || 'Unnamed Army List' }}</h4>
 
         <div
           v-for="team in hevCardsByTeam"
