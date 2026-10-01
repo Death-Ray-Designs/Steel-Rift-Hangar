@@ -6,6 +6,7 @@ import { MECH_ARMOR_UPGRADE } from '../../../../data/mech-armor-upgrades';
 import { useFactionStore } from '../../../../store/faction-store';
 import { useMechStore } from '../../../../store/mech-store';
 import { usePlayStore } from '../../../../store/play-store';
+import { splitHevStructureIntoCriticalChunkSizes } from '../../../../data/hev-helpers';
 
 const mechStore = useMechStore();
 const factionStore = useFactionStore();
@@ -57,24 +58,10 @@ const armorHp = computed(() => {
   return chunk(points, 5);
 });
 
-function splitIntoChunkCounts(total: number) {
-  const parts = 4;
-  const base = Math.floor(total / parts);
-  const remainder = total % parts;
-
-  const chunks = Array(parts).fill(base);
-
-  for (let i = 0; i < remainder; i++) {
-    chunks[i] += 1;
-  }
-
-  return chunks;
-}
-
 const structureHp = computed(() => {
   const structure = info.value.structure_stat;
 
-  const chunkCounts = splitIntoChunkCounts(structure);
+  const chunkCounts = splitHevStructureIntoCriticalChunkSizes(structure);
 
   type StructureHP = {
     type: 'M' | 'D' | 'Ø' | '-' | null

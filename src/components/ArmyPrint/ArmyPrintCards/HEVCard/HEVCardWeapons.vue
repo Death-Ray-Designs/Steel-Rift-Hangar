@@ -95,6 +95,12 @@ function getUses(weapon: typeof weapons.value[number]) {
   return playStore.getHevWeaponTimesUsed(mechId, weapon.id);
 }
 
+const hasDamageCritical = computed(() => {
+  if (!play) return false;
+
+  return playStore.getHevStructureCriticals(mechId).damage;
+});
+
 </script>
 <template>
   <table class="table-stats">
@@ -136,8 +142,9 @@ function getUses(weapon: typeof weapons.value[number]) {
           >&nbsp;</span>
         </span>
       </td>
-      <td class="text-nowrap">
+      <td class="text-nowrap" :class="{'number-damaged': hasDamageCritical && !weapon.is_mine_drone}">
         <DamageFormatter
+          :has-damage-critical="hasDamageCritical && !weapon.is_mine_drone"
           :ranged-base-damage="weapon.ranged_base_damage"
           :ranged-total-damage="weapon.ranged_total_damage"
           :combat-shield-damage-penalty="weapon.combat_shield_damage_penalty"

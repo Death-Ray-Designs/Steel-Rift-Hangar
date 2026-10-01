@@ -3,10 +3,14 @@ import { computed } from 'vue';
 import { useMechStore } from './mech-store';
 import { useSupportAssetUnitsStore } from './support-asset-units-store';
 import { make2KeyCounter, makeCounter, makeMultiKeyCounter } from './helpers/store-counters';
+import { FACTION_PERK } from '../data/faction-perks';
+import { useFactionStore } from './faction-store';
+import { splitHevStructureIntoCriticalChunkSizes } from '../data/hev-helpers';
 
 export const usePlayStore = defineScopeableStore('play-store', ({ scope }: { scope: string }) => {
         const mechStore = useMechStore(scope);
         const unitStore = useSupportAssetUnitsStore(scope);
+        const factionStore = useFactionStore(scope);
 
         const {
             counterData: hevWeaponUses,
@@ -137,6 +141,35 @@ export const usePlayStore = defineScopeableStore('play-store', ({ scope }: { sco
                 || garrisonHasArmorDamage();
         });
 
+
+        function getHevStructureCriticals(mechId: number) {
+            const structure = mechStore.getMechInfo(mechId)!.structure_stat;
+            const offset = factionStore.hasPerk(FACTION_PERK.RD_ADVANCED_STRUCTURAL_COMPONENTS) ? 2 : 0;
+            const criticals = {
+                move: false,
+                damage: false,
+                orders: false,
+            };
+
+            const structureDamage = getHevStructureDamage(mechId);
+            let start = offset;
+            splitHevStructureIntoCriticalChunkSizes(structure).forEach((count, index) => {
+                const end = start + count;
+                if (count > 0 && end <= structure && structureDamage >= end) {
+                    if (index === 0) {
+                        criticals.move = true;
+                    } else if (index === 1) {
+                        criticals.damage = true;
+                    } else if (index === 2) {
+                        criticals.orders = true;
+                    }
+                }
+                start += count;
+            });
+
+            return criticals;
+        }
+
         function $reset() {
             clearHevWeaponUses();
             clearHevUpgradeUses();
@@ -207,6 +240,8 @@ export const usePlayStore = defineScopeableStore('play-store', ({ scope }: { sco
             getGarrisonArmorDamage,
             addGarrisonArmorDamage,
             removeGarrisonArmorDamage,
+
+            getHevStructureCriticals,
         };
     }, (scope: string) => {
         return {

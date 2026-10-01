@@ -218,3 +218,8 @@ body[data-bs-theme='dark'] {
   padding-top: 0.25rem;
   padding-bottom: 0.25rem;
 }
+
+.number-damaged {
+  color:  shade-color($danger, 50%);
+  background:  rgba(255,0,0,0.2);
+}
