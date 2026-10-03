@@ -1,5 +1,5 @@
 import { makeFrozenStaticListIds } from './data-helpers';
-import { FACTION_PERK } from './faction-perks';
+import { FACTION_PERK, FACTION_PERKS, isMatchingPerkOrCopy } from './faction-perks';
 import { SECONDARY_AGENDA } from './secondary-agendas';
 
 export enum FACTION {
@@ -33,6 +33,7 @@ export interface FactionPerkGroup<ID extends Partial<FACTION_PERK_GROUP>> {
 export interface Faction {
     id: FACTION;
     display_name: string;
+    rules_description?: string;
     secondary_agenda_id?: SECONDARY_AGENDA;
     faction_perk_groups: Readonly<Partial<Record<FACTION_PERK_GROUP, FactionPerkGroup<any>>>>;
 }
@@ -111,6 +112,7 @@ export const FACTIONS = makeFrozenStaticListIds<Faction>({
     [FACTION.FREELANCERS]: {
         display_name: 'Freelancers',
         secondary_agenda_id: SECONDARY_AGENDA.WILDCARDS,
+        rules_description: 'Freelancers may never select more than one Perk from each other Faction. Their Perks may allow them to select a Perk from both the Authorities and Corporations Factions, but never two Perks from the same Faction.',
         faction_perk_groups: perkGroups({
             [FACTION_PERK_GROUP.ROGUE_AGENCY]: {
                 display_name: 'Rogue Agency',
@@ -146,3 +148,64 @@ export const FACTIONS = makeFrozenStaticListIds<Faction>({
         }),
     },
 });
+
+export interface FactionPerkLocation {
+    faction: Faction;
+    group: FactionPerkGroup<any>;
+}
+
+export const FACTION_PERK_LOCATIONS: Readonly<Partial<Record<FACTION_PERK, FactionPerkLocation>>> = Object.freeze(
+    Object.values(FACTIONS).reduce((acc, faction) => {
+        Object.values(faction.faction_perk_groups).forEach((group) => {
+            group.perk_ids.forEach((perkId: FACTION_PERK) => {
+                acc[perkId] = { faction, group };
+            });
+        });
+        return acc;
+    }, {} as Partial<Record<FACTION_PERK, FactionPerkLocation>>),
+);
+
+export function getPerkGroupId(perkId: FACTION_PERK | null): FACTION_PERK_GROUP | undefined {
+    if (!perkId) return;
+    return FACTION_PERK_LOCATIONS[perkId]?.group.id;
+}
+
+export function getPerkCopiedFromFactionId(perkId: FACTION_PERK | null): FACTION | undefined {
+    if (!perkId) return;
+    const copiedPerkId = FACTION_PERKS[perkId]?.copied_perk_id;
+    if (!copiedPerkId) return;
+    return FACTION_PERK_LOCATIONS[copiedPerkId]?.faction.id;
+}
+
+// two perks conflict if they are the same perk (or a copy of it), share a perk group,
+// or are both copied from the same faction (only one perk may be copied from each other faction)
+export function perksConflict(perkA: FACTION_PERK, perkB: FACTION_PERK): boolean {
+    if (isMatchingPerkOrCopy(perkA, perkB) || isMatchingPerkOrCopy(perkB, perkA)) return true;
+
+    const groupId = getPerkGroupId(perkA);
+    if (groupId && groupId === getPerkGroupId(perkB)) return true;
+
+    const copiedFromFactionId = getPerkCopiedFromFactionId(perkA);
+    return !!copiedFromFactionId && copiedFromFactionId === getPerkCopiedFromFactionId(perkB);
+}
+
+export function perkBelongsToFaction(factionId: FACTION, perkId: FACTION_PERK | null): boolean {
+    if (!perkId) return false;
+    return FACTION_PERK_LOCATIONS[perkId]?.faction.id === factionId;
+}
+
+// returns the perk selection with invalid perks cleared, perk 1 is kept over perk 2 when they conflict
+export function getValidFactionPerkIds(
+    factionId: FACTION,
+    perk1Id: FACTION_PERK | null,
+    perk2Id: FACTION_PERK | null,
+): [FACTION_PERK | null, FACTION_PERK | null] {
+    const perk1 = perkBelongsToFaction(factionId, perk1Id) ? perk1Id : null;
+    let perk2 = perkBelongsToFaction(factionId, perk2Id) ? perk2Id : null;
+
+    if (perk1 && perk2 && perksConflict(perk1, perk2)) {
+        perk2 = null;
+    }
+
+    return [perk1, perk2];
+}

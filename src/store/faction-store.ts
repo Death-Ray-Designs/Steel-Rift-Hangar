@@ -4,9 +4,13 @@ import { FACTION_PERK, FACTION_PERKS, type FactionPerkInfo, isMatchingPerkOrCopy
 import {
     DWC_TOP_END_HARDWARE_BONUS_TONS,
     FACTION,
+    FACTION_PERK_LOCATIONS,
     FACTIONS,
+    getValidFactionPerkIds,
+    perksConflict,
     RD_ADVANCED_HARDPOINT_DESIGN_BONUS_SLOTS,
 } from '../data/factions';
+import { ifEmptyString } from './helpers/helpers';
 
 export const useFactionStore = defineScopeableStore('faction', ({ scope }: { scope: string }) => {
 
@@ -24,12 +28,8 @@ export const useFactionStore = defineScopeableStore('faction', ({ scope }: { sco
 
         const faction_display_name = computed(() => FACTIONS[faction_id.value].display_name);
 
-        function perkBelongsToFaction(perkId: FACTION_PERK | null) {
-            if (!perkId) return false;
-            return !!Object.values(FACTIONS[faction_id.value].faction_perk_groups).find((perkGroup) => {
-                return perkGroup.perk_ids.includes(perkId);
-            });
-        }
+        const faction = computed(() => FACTIONS[faction_id.value]);
+
 
         function hasPerk(perkId: FACTION_PERK) {
             return isMatchingPerkOrCopy(perkId, perk_1_id.value) || isMatchingPerkOrCopy(perkId, perk_2_id.value);
@@ -45,11 +45,9 @@ export const useFactionStore = defineScopeableStore('faction', ({ scope }: { sco
             }
         }
 
-        function hasExactPerk(perkId: FACTION_PERK) {
-            return perkId === perk_1_id.value || perkId === perk_2_id.value;
-        }
-
         function addPerk(perkId: FACTION_PERK) {
+            if (!canAddPerk(perkId)) return;
+
             if (perk_1_id.value === null) {
                 perk_1_id.value = perkId;
                 return;
@@ -70,13 +68,15 @@ export const useFactionStore = defineScopeableStore('faction', ({ scope }: { sco
         }
 
         function clearInvalidPerks() {
-            if (!perkBelongsToFaction(perk_1_id.value)) {
-                perk_1_id.value = null;
-            }
+            [perk_1_id.value, perk_2_id.value] = getValidFactionPerkIds(faction_id.value, perk_1_id.value, perk_2_id.value);
+        }
 
-            if (!perkBelongsToFaction(perk_2_id.value)) {
-                perk_2_id.value = null;
+        // stored state may be from before perk rules changed or reference removed factions / perks
+        function afterHydrate() {
+            if (!FACTIONS[faction_id.value]) {
+                faction_id.value = defaultFactionId;
             }
+            clearInvalidPerks();
         }
 
         function getPerkInfo(perkId: FACTION_PERK | null): null | FactionPerkInfo {
@@ -91,60 +91,83 @@ export const useFactionStore = defineScopeableStore('faction', ({ scope }: { sco
         const perk_1_info = computed(() => getPerkInfo(perk_1_id.value));
         const perk_2_info = computed(() => getPerkInfo(perk_2_id.value));
 
-        const perk_1_group_id = computed(() => findPerkGroupId(perk_1_id.value));
-        const perk_2_group_id = computed(() => findPerkGroupId(perk_2_id.value));
-
         const perks_full = computed(() => {
             return !!(perk_1_id.value && perk_2_id.value);
         });
 
-        function hasPerkInGroupId(groupId: string) {
-            if (perk_1_group_id.value) {
-                return perk_1_group_id.value === groupId;
-            }
-            if (perk_2_group_id.value) {
-                return perk_2_group_id.value === groupId;
-            }
-            return false;
-        }
+        function canAddPerk(perkId: FACTION_PERK) {
+            if (perks_full.value) return false;
 
-        function findPerkGroupId(perkId: FACTION_PERK | null) {
-            if (!perkId) return;
-            const factions = Object.values(FACTIONS);
-            for (let i = 0; i < factions.length; i++) {
-                const faction = factions[i];
-
-                const groups = Object.values(faction.faction_perk_groups);
-                for (let j = 0; j < groups.length; j++) {
-
-                    const group = groups[j];
-
-                    if (group.perk_ids.includes(perkId)) {
-                        return group.id;
-                    }
-                }
-            }
+            return ![perk_1_id.value, perk_2_id.value].some((selectedPerkId) => {
+                return selectedPerkId && perksConflict(selectedPerkId, perkId);
+            });
         }
 
         const perk_grid = computed(() => {
             let perkGroups = FACTIONS[faction_id.value].faction_perk_groups;
 
             return Object.values(perkGroups).map(({ id, display_name, perk_ids }) => {
+                const perks = perk_ids.map((perkId: FACTION_PERK) => {
+                    const {
+                        id,
+                        display_name,
+                        description,
+                        prefix,
+                        copied_perk_id,
+                    } = FACTION_PERKS[perkId];
+
+                    let copied_from = null;
+
+                    if (copied_perk_id) {
+                        copied_from = {
+                            ...FACTION_PERK_LOCATIONS[copied_perk_id],
+                            perk: FACTION_PERKS[copied_perk_id],
+                        };
+                    }
+
+                    return {
+                        id,
+                        prefix,
+                        display_name,
+                        description,
+                        copied_from,
+                    };
+                });
+
+                // consecutive perks copied from the same source are grouped into one section
+                const sections: {
+                    key: string,
+                    source_key: string,
+                    prefix?: string,
+                    copied_from: typeof perks[number]['copied_from'],
+                    perks: typeof perks,
+                }[] = [];
+
+                perks.forEach((perk) => {
+                    const sourceKey = perk.copied_from
+                        ? [perk.prefix, perk.copied_from.faction?.id, perk.copied_from.group?.id].join('|')
+                        : '';
+                    const last = sections[sections.length - 1];
+
+                    if (last && last.source_key === sourceKey) {
+                        last.perks.push(perk);
+                        return;
+                    }
+
+                    sections.push({
+                        // index keeps keys unique if the same source appears in non-consecutive sections
+                        key: sections.length + ':' + sourceKey,
+                        source_key: sourceKey,
+                        prefix: perk.prefix,
+                        copied_from: perk.copied_from,
+                        perks: [perk],
+                    });
+                });
+
                 return {
                     id,
                     display_name,
-                    perks: perk_ids.map((perkId) => {
-                        const {
-                            id,
-                            display_name,
-                            description,
-                        } = FACTION_PERKS[perkId];
-                        return {
-                            id,
-                            display_name,
-                            description,
-                        };
-                    }),
+                    sections,
                 };
             });
         });
@@ -173,12 +196,11 @@ export const useFactionStore = defineScopeableStore('faction', ({ scope }: { sco
         return {
             perk_1_id,
             perk_2_id,
-            perk_1_group_id,
-            perk_2_group_id,
             perk_1_info,
             perk_2_info,
             faction_id,
             faction_display_name,
+            faction,
             perks_full,
             factions_info,
             perk_grid,
@@ -186,7 +208,8 @@ export const useFactionStore = defineScopeableStore('faction', ({ scope }: { sco
             addPerk,
             removePerk,
             clearInvalidPerks,
-            hasPerkInGroupId,
+            afterHydrate,
+            canAddPerk,
             hasPerk,
 
             hasAdvancedHardPoints,
@@ -202,7 +225,11 @@ export const useFactionStore = defineScopeableStore('faction', ({ scope }: { sco
         };
     }, (scope: string) => {
         return {
-            persist: scope === '',
+            persist: ifEmptyString(scope, {
+                afterHydrate: (ctx) => {
+                    ctx.store.afterHydrate();
+                },
+            }),
         };
     },
 );

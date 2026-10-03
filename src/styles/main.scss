@@ -59,6 +59,7 @@ $dropdown-link-active-color: #000;
 $dropdown-link-active-bg: darken(#f8f9fa, 7%);
 
 $table-group-separator-color: color-mix(in srgb, currentColor 50%, transparent);
+$nav-link-color: darken($primary, 20%);
 
 @import '../../node_modules/bootstrap/scss/bootstrap';
 @import '../../node_modules/bootstrap-vue-next/src/styles/styles';
@@ -220,6 +221,17 @@ body[data-bs-theme='dark'] {
 }
 
 .number-damaged {
-  color:  shade-color($danger, 50%);
-  background:  rgba(255,0,0,0.2);
+  color: shade-color($danger, 50%);
+  background: rgba(255, 0, 0, 0.2);
+}
+
+.text-primary {
+  $c: shade-color($primary, 40%);
+  --bs-primary-rgb: #{to-rgb($c)};
+}
+
+@include color-mode(dark) {
+  .text-primary {
+    --bs-primary-rgb: #{to-rgb($primary)};
+  }
 }

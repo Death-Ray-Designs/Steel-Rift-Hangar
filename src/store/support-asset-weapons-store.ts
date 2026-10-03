@@ -12,6 +12,7 @@ import {
 import { WEAPON_TRAIT, weaponTraitInfo } from '../data/weapon-traits';
 import { useFactionStore } from './faction-store';
 import { useTeamStore } from './team-store';
+import { ifEmptyString } from './helpers/helpers';
 
 export const useSupportAssetWeaponsStore = defineScopeableStore('weapon-support-asset', ({ scope }: {
         scope: string
@@ -152,6 +153,12 @@ export const useSupportAssetWeaponsStore = defineScopeableStore('weapon-support-
 
         watch(perk_1_id, syncOutrageousSupportBudgetPerk);
         watch(perk_2_id, syncOutrageousSupportBudgetPerk);
+
+        // the perk watchers do not run for perks removed while hydrating
+        function afterHydrate() {
+            syncOutrageousSupportBudgetPerk();
+        }
+
         return {
             support_asset_weapon_ids,
             outrageous_budget_perk_support_asset_id,
@@ -165,11 +172,16 @@ export const useSupportAssetWeaponsStore = defineScopeableStore('weapon-support-
             removeSupportAssetId,
             addSupportAsset,
             hasSupportAssetId,
+            afterHydrate,
             $reset,
         };
     }, (scope: string) => {
         return {
-            persist: scope === '',
+            persist: ifEmptyString(scope, {
+                afterHydrate: (ctx) => {
+                    ctx.store.afterHydrate();
+                },
+            }),
         };
     },
 );

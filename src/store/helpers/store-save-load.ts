@@ -2,6 +2,7 @@ import { getStoreUnscopedId } from 'pinia-scope';
 import { MECH_MOBILITY } from '../../data/mech-mobility';
 import { MECH_TEAM } from '../../data/mech-teams';
 import { ULTRA_LIGHT_HEV_SQUADRON } from '../../data/support-assets/ultra-light-hev-squadron';
+import { FACTION, FACTIONS, getValidFactionPerkIds } from '../../data/factions';
 import { useArmyListStore } from '../army-list-store';
 import { useFactionStore } from '../faction-store';
 import { useMechStore } from '../mech-store';
@@ -115,6 +116,15 @@ export function migrateLoadData(data: any) {
         data?.mech?.mechs?.forEach((mech: any) => {
             mech.armor_upgrade_ids = normalizeArmorUpgrades(mech.size_id, mech.armor_upgrade_ids);
         });
+    }
+
+    // strip perk selections that are invalid for the faction or break perk selection rules
+    if (data.faction) {
+        const factionId = FACTIONS[data.faction.faction_id as FACTION] ? data.faction.faction_id : FACTION.NO_FACTION;
+        const [perk1Id, perk2Id] = getValidFactionPerkIds(factionId, data.faction.perk_1_id ?? null, data.faction.perk_2_id ?? null);
+        data.faction.faction_id = factionId;
+        data.faction.perk_1_id = perk1Id;
+        data.faction.perk_2_id = perk2Id;
     }
 
     const shelfTeam = data?.team?.teams?.find((team: any) => team.id === MECH_TEAM.SHELF);
