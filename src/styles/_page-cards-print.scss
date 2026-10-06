@@ -201,6 +201,12 @@ body .output-container {
       text-align: left;
       padding-left: $card-padding-x - 1pt;
 
+      &.hp-7-per-row {
+        .hp {
+          width: 8.5pt;
+        }
+      }
+
       .hp-row {
         display: flex;
         align-items: start;

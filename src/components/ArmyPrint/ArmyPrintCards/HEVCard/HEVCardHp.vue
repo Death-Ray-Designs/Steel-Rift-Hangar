@@ -26,9 +26,15 @@ const structureSystem = computed(() => {
   }
 });
 
-const armor6PerRow = computed(() => {
+const armorPerRow = computed(() => {
   const armorStat = info.value.armor_stat;
-  return armorStat > 15;
+  if (armorStat > 18) {
+    return 7;
+  }
+  if (armorStat > 15) {
+    return 6;
+  }
+  return 5;
 });
 
 const structure6PerRow = computed(() => {
@@ -52,10 +58,7 @@ const armorHp = computed(() => {
     ...new Array(extraArmor).fill(0).map((v, index) => ({ type: 'extra_armor', index: baseArmor + index })),
   ] as ArmorHP[];
 
-  if (armor6PerRow.value) {
-    return chunk(points, 6);
-  }
-  return chunk(points, 5);
+  return chunk(points, armorPerRow.value);
 });
 
 const structureHp = computed(() => {
@@ -155,7 +158,7 @@ function clickArmor(index: number) {
         </template>
       </small>
       </div>
-      <div class="hp-container">
+      <div class="hp-container" :class="`hp-${armorPerRow}-per-row`">
         <div class="hp-row" v-for="row in armorHp">
           <span
             class="hp hp-armor"
