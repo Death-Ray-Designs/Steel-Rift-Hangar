@@ -99,14 +99,16 @@
       .upgrade-use,
       .hp,
       .use {
-        &:hover {
-          background: #bfbfbf;
+        @media (hover: hover) {
+          &:hover {
+            background: #bfbfbf;
 
-          &.filled {
-            background: #70808c;
+            &.filled {
+              background: #70808c;
+            }
+
+            cursor: pointer;
           }
-
-          cursor: pointer;
         }
 
         user-select: none;
