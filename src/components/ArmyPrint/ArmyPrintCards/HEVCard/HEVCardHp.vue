@@ -6,7 +6,9 @@ import { MECH_ARMOR_UPGRADE } from '../../../../data/mech-armor-upgrades';
 import { useFactionStore } from '../../../../store/faction-store';
 import { useMechStore } from '../../../../store/mech-store';
 import { usePlayStore } from '../../../../store/play-store';
+import { clickedBoxValue } from '../../../../store/helpers/store-counters';
 import { splitHevStructureIntoCriticalChunkSizes } from '../../../../data/hev-helpers';
+import BtnPlusMinus from '../../../ArmyPlay/BtnPlusMinus.vue';
 
 const mechStore = useMechStore();
 const factionStore = useFactionStore();
@@ -112,14 +114,17 @@ const armorUpgrades = computed(() => {
 
 const play = inject('play', false);
 
+const playStore = usePlayStore();
 const {
   addHevStructureDamage,
   addHevArmorDamage,
   removeHevStructureDamage,
   removeHevArmorDamage,
+  setHevArmorDamage,
+  setHevStructureDamage,
   getHevStructureDamage,
-  getHevArmorDamage
-} = usePlayStore();
+  getHevArmorDamage,
+} = playStore;
 
 const armorDamage = computed(() => getHevArmorDamage(mechId));
 const structureDamage = computed(() => getHevStructureDamage(mechId));
@@ -134,16 +139,16 @@ function isStructureDamaged(index: number) {
 
 function clickStructure(index: number) {
   if (!play) return;
-  isStructureDamaged(index) ? removeHevStructureDamage(mechId) : addHevStructureDamage(mechId);
+  setHevStructureDamage(clickedBoxValue(index + 1, structureDamage.value), mechId);
 }
 
 function clickArmor(index: number) {
   if (!play) return;
-  isArmorDamaged(index) ? removeHevArmorDamage(mechId) : addHevArmorDamage(mechId);
+  setHevArmorDamage(clickedBoxValue(index + 1, armorDamage.value), mechId);
 }
 </script>
 <template>
-  <div class="row g-1 row-damage">
+  <div class="row row-damage" :class="play ? 'g-2' : 'g-1'">
     <div class="col-5">
       <div class="hp-heading">
         ARMOR <small
@@ -158,6 +163,12 @@ function clickArmor(index: number) {
         </template>
       </small>
       </div>
+      <BtnPlusMinus
+        @add="addHevArmorDamage(mechId)"
+        @remove="removeHevArmorDamage(mechId)"
+        class="mb-1 d-inline-flex w-100"
+      />
+
       <div class="hp-container" :class="`hp-${armorPerRow}-per-row`">
         <div class="hp-row" v-for="row in armorHp">
           <span
@@ -177,6 +188,13 @@ function clickArmor(index: number) {
           <div class="hp-heading ps-0">
             STRUCTURE
           </div>
+
+          <BtnPlusMinus
+            @add="addHevStructureDamage(mechId)"
+            @remove="removeHevStructureDamage(mechId)"
+            class="mb-1 d-inline-flex w-100 pe-2"
+          />
+
           <div class="hp-container">
             <div class="hp-row" v-for="row in structureHp">
               <span

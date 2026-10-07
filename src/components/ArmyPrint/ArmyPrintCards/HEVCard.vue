@@ -2,6 +2,8 @@
 import { setComponentScope } from 'pinia-scope';
 import { computed, inject, onMounted, useTemplateRef } from 'vue';
 import { useMechStore } from '../../../store/mech-store';
+import { usePlayStore } from '../../../store/play-store';
+import { BButton } from 'bootstrap-vue-next';
 import CardFooter from './CardParts/CardFooter.vue';
 import CardHeader from './CardParts/CardHeader.vue';
 import HEVCardHp from './HEVCard/HEVCardHp.vue';
@@ -19,7 +21,12 @@ const play = inject('play', false);
 setComponentScope(storeScope);
 const mechStore = useMechStore(storeScope);
 
+const playStore = usePlayStore(storeScope);
+
 const info = computed(() => mechStore.getMechInfo(mechId)!);
+
+const destroyed = computed(() => play && playStore.isHevDestroyed(mechId));
+const showDestroyedBtn = computed(() => play && (destroyed.value || playStore.isHevStructureFull(mechId)));
 
 const adjustableRef = useTemplateRef<HTMLElement | null>('adjustableSize');
 
@@ -50,13 +57,25 @@ function adjustFontSize() {
 onMounted(adjustFontSize);
 </script>
 <template>
-  <div class="game-card">
+  <div class="game-card" :class="destroyed? 'pb-0' : ''">
     <div class="card-content-container">
 
-      <CardHeader :title="info.display_name" />
-      <HEVCardStats :mech-id="mechId" />
-      <HEVCardHp :mech-id="mechId" />
-      <div ref="adjustableSize">
+      <CardHeader :title="info.display_name">
+        <template #after-title>
+          <BButton
+            v-if="showDestroyedBtn"
+            size="sm"
+            :variant="destroyed ? 'secondary' : 'danger'"
+            class="me-1 py-0"
+            @click="playStore.setHevDestroyed(mechId, !destroyed)"
+          >
+            {{ destroyed ? 'Show Destroyed' : 'Hide Destroyed' }}
+          </BButton>
+        </template>
+      </CardHeader>
+      <HEVCardStats v-if="!destroyed" :mech-id="mechId" />
+      <HEVCardHp v-if="!destroyed" :mech-id="mechId" />
+      <div v-if="!destroyed" ref="adjustableSize">
         <HEVCardWeapons
           :mech-id="mechId"
           @content-changed="adjustFontSize"
@@ -66,7 +85,7 @@ onMounted(adjustFontSize);
           @content-changed="adjustFontSize"
         />
       </div>
-      <CardFooter />
+      <CardFooter v-if="!destroyed" />
     </div>
   </div>
 </template>

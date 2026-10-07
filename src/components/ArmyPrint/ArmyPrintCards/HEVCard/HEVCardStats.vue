@@ -50,7 +50,7 @@ const jump = computed(() => {
 
 </script>
 <template>
-  <div class="row g-1">
+  <div class="row" :class="play ? 'g-2' : 'g-1'">
     <div class="col-5">
       <div class="unit-info">
         <div class="hev-size">

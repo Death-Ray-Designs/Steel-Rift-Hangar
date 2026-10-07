@@ -8,6 +8,7 @@ import FormatInches from '../../../functional/format-inches.vue';
 import { formatCardRef } from '../../../functional/formatters.js';
 import UnitCardHalfHeader from './UnitCardHalfHeader.vue';
 import { usePlayStore } from '../../../../store/play-store';
+import { clickedBoxValue } from '../../../../store/helpers/store-counters';
 
 const { unitAttachmentId } = defineProps<{
   unitAttachmentId: number
@@ -37,16 +38,12 @@ function filterTraits(traits: Trait<UNIT_TRAIT>[]) {
 const play = inject('play', false);
 
 const {
-  addUnitWeaponTimesUsed,
-  removeUnitWeaponTimesUsed,
+  setUnitWeaponTimesUsed,
   getUnitWeaponTimesUsed,
-  addUnitArmorDamage,
-  removeUnitArmorDamage,
+  setUnitArmorDamage,
   getUnitArmorDamage,
+  setUnitStructureDamage,
   getUnitStructureDamage,
-  addUnitStructureDamage,
-  removeUnitStructureDamage,
-
 } = usePlayStore();
 
 function isStructureDamaged(damageKey: number, chunkIndex: number, index: number) {
@@ -59,17 +56,20 @@ function isArmorDamaged(damageKey: number, chunkIndex: number, index: number) {
 
 function clickArmorDamaged(itemId: number, chunkIndex: number, index: number) {
   if (!play) return;
-  isArmorDamaged(itemId, chunkIndex, index) ? removeUnitArmorDamage(unitAttachmentId, itemId) : addUnitArmorDamage(unitAttachmentId, itemId);
+  const damage = getUnitArmorDamage(unitAttachmentId, itemId);
+  setUnitArmorDamage(clickedBoxValue(chunkIndex * 4 + index + 1, damage), unitAttachmentId, itemId);
 }
 
 function clickStructureDamaged(itemId: number, chunkIndex: number, index: number) {
   if (!play) return;
-  isStructureDamaged(itemId, chunkIndex, index) ? removeUnitStructureDamage(unitAttachmentId, itemId) : addUnitStructureDamage(unitAttachmentId, itemId);
+  const damage = getUnitStructureDamage(unitAttachmentId, itemId);
+  setUnitStructureDamage(clickedBoxValue(chunkIndex * 4 + index + 1, damage), unitAttachmentId, itemId);
 }
 
 function clickWeaponUse(itemId: number, weaponIndex: number, i: number) {
   if (!play) return;
-  i <= getUnitWeaponTimesUsed(unitAttachmentId, itemId, weaponIndex) ? removeUnitWeaponTimesUsed(unitAttachmentId, itemId, weaponIndex) : addUnitWeaponTimesUsed(unitAttachmentId, itemId, weaponIndex);
+  const used = getUnitWeaponTimesUsed(unitAttachmentId, itemId, weaponIndex);
+  setUnitWeaponTimesUsed(clickedBoxValue(i, used), unitAttachmentId, itemId, weaponIndex);
 }
 
 </script>

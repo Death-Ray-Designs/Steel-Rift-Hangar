@@ -28,6 +28,10 @@ export function makeMultiKeyCounter<Keys extends (string | number)[]>(max: (...k
         counterData[makeKey(keys)]--;
     }
 
+    function set(value: number, ...keys: Keys) {
+        counterData[makeKey(keys)] = Math.max(0, Math.min(value, max(...keys)));
+    }
+
     function get(...keys: Keys) {
         return counterData[makeKey(keys)] ?? 0;
     }
@@ -50,11 +54,17 @@ export function makeMultiKeyCounter<Keys extends (string | number)[]>(max: (...k
         counterData,
         add,
         remove,
+        set,
         get,
         hasValues,
         clear,
         prune,
     };
+}
+
+// clicking box n fills boxes 1..n, except clicking the first box while it is the only one filled clears it
+export function clickedBoxValue(clicked: number, current: number) {
+    return clicked === 1 && current === 1 ? 0 : clicked;
 }
 
 export function clearObject(obj: object) {

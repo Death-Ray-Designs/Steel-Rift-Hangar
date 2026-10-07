@@ -19,6 +19,7 @@ const play = inject('play', false);
     <div class="flex-grow-1">
       {{ title }} <small v-if="subTitle" class="game-card-subtitle"> {{ subTitle }}</small>
     </div>
+    <slot name="after-title" />
     <div class="flex-shrink-1" v-if="include_army_name_on_cards && !play">
       {{ armyStore.name || 'Unnamed Army' }}
     </div>

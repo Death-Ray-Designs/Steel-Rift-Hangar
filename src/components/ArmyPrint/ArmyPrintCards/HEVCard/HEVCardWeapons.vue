@@ -9,6 +9,7 @@ import type { MechWeaponAttachmentInfo, TraitInfo } from '../../../../types';
 import DamageFormatter from '../../../UI/DamageFormatter.vue';
 import RangeFormatter from '../../../UI/RangeFormatter.vue';
 import { usePlayStore } from '../../../../store/play-store';
+import { clickedBoxValue } from '../../../../store/helpers/store-counters';
 
 const mechStore = useMechStore();
 const emit = defineEmits<{
@@ -67,25 +68,17 @@ const play = inject('play', false);
 const playStore = usePlayStore();
 
 // mine drone uses are tracked against the upgrade attachment, not a weapon attachment
-function addUse(weapon: typeof weapons.value[number]) {
+function setUses(weapon: typeof weapons.value[number], value: number) {
   if (weapon.is_mine_drone) {
-    playStore.addHevUpgradeTimesUsed(mechId, weapon.id);
+    playStore.setHevUpgradeTimesUsed(value, mechId, weapon.id);
   } else {
-    playStore.addHevWeaponTimesUsed(mechId, weapon.id);
-  }
-}
-
-function removeUse(weapon: typeof weapons.value[number]) {
-  if (weapon.is_mine_drone) {
-    playStore.removeHevUpgradeTimesUsed(mechId, weapon.id);
-  } else {
-    playStore.removeHevWeaponTimesUsed(mechId, weapon.id);
+    playStore.setHevWeaponTimesUsed(value, mechId, weapon.id);
   }
 }
 
 function clickUse(weapon: typeof weapons.value[number], i: number) {
   if (!play) return;
-  i <= getUses(weapon) ? removeUse(weapon) : addUse(weapon);
+  setUses(weapon, clickedBoxValue(i, getUses(weapon)));
 }
 
 function getUses(weapon: typeof weapons.value[number]) {

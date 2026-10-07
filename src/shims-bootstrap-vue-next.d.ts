@@ -5,6 +5,8 @@ declare module 'bootstrap-vue-next' {
         transparent: unknown,
         'transparent-light': unknown,
         'transparent-dark': unknown,
+        'danger-light': unknown,
+        'success-light': unknown,
         default: unknown,
     }
 }

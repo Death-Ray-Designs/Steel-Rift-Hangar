@@ -9,6 +9,7 @@ import { useTeamStore } from '../../../../store/team-store';
 import type { TraitInfo } from '../../../../types';
 import SvgIcon from '../../../UI/Icon.vue';
 import { usePlayStore } from '../../../../store/play-store';
+import { clickedBoxValue } from '../../../../store/helpers/store-counters';
 
 const mechStore = useMechStore();
 const teamStore = useTeamStore();
@@ -111,7 +112,8 @@ function clickUpgradeUse(upgradeAttachmentId: number | undefined, index: number)
   if (!play) return;
   if (upgradeAttachmentId === undefined) return;
 
-  isUpgradeUsed(upgradeAttachmentId, index) ? playStore.removeHevUpgradeTimesUsed(mechId, upgradeAttachmentId) : playStore.addHevUpgradeTimesUsed(mechId, upgradeAttachmentId);
+  const used = playStore.getHevUpgradeTimesUsed(mechId, upgradeAttachmentId);
+  playStore.setHevUpgradeTimesUsed(clickedBoxValue(index, used), mechId, upgradeAttachmentId);
 }
 </script>
 <template>

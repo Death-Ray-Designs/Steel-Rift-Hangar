@@ -1,8 +1,8 @@
 import { defineScopeableStore } from 'pinia-scope';
-import { computed, watch } from 'vue';
+import { computed, reactive, ref, watch } from 'vue';
 import { useMechStore } from './mech-store';
 import { useSupportAssetUnitsStore } from './support-asset-units-store';
-import { makeMultiKeyCounter } from './helpers/store-counters';
+import { clearObject, makeMultiKeyCounter } from './helpers/store-counters';
 import { FACTION_PERK } from '../data/faction-perks';
 import { useFactionStore } from './faction-store';
 import { splitHevStructureIntoCriticalChunkSizes } from '../data/hev-helpers';
@@ -13,11 +13,40 @@ export const usePlayStore = defineScopeableStore('play-store', ({ scope }: { sco
         const unitStore = useSupportAssetUnitsStore(scope);
         const factionStore = useFactionStore(scope);
 
+        const enableBtnPlusMinus = ref(true);
+
+        // cosmetic only: hides the hev card content in play mode
+        const hevDestroyed: Record<string, boolean> = reactive({});
+
+        function isHevDestroyed(mechId: number) {
+            return hevDestroyed[mechId] ?? false;
+        }
+
+        function setHevDestroyed(mechId: number, destroyed: boolean) {
+            if (destroyed) {
+                hevDestroyed[mechId] = true;
+            } else {
+                delete hevDestroyed[mechId];
+            }
+        }
+
+        function pruneHevDestroyed(shouldPrune: (key: string) => boolean) {
+            Object.keys(hevDestroyed).forEach(key => {
+                if (shouldPrune(key)) delete hevDestroyed[key];
+            });
+        }
+
+        function isHevStructureFull(mechId: number) {
+            const structure = mechStore.getMechInfo(mechId)?.structure_stat ?? 0;
+            return structure > 0 && getHevStructureDamage(mechId) >= structure;
+        }
+
         const {
             counterData: hevWeaponUses,
             add: addHevWeaponTimesUsed,
             remove: removeHevWeaponTimesUsed,
             get: getHevWeaponTimesUsed,
+            set: setHevWeaponTimesUsed,
             hasValues: hevHasWeaponUses,
             clear: clearHevWeaponUses,
             prune: pruneHevWeaponUses,
@@ -30,6 +59,7 @@ export const usePlayStore = defineScopeableStore('play-store', ({ scope }: { sco
             add: addHevUpgradeTimesUsed,
             remove: removeHevUpgradeTimesUsed,
             get: getHevUpgradeTimesUsed,
+            set: setHevUpgradeTimesUsed,
             hasValues: hevHasUpgradeUses,
             clear: clearHevUpgradeUses,
             prune: pruneHevUpgradeUses,
@@ -42,6 +72,7 @@ export const usePlayStore = defineScopeableStore('play-store', ({ scope }: { sco
             add: addUnitWeaponTimesUsed,
             remove: removeUnitWeaponTimesUsed,
             get: getUnitWeaponTimesUsed,
+            set: setUnitWeaponTimesUsed,
             hasValues: unitHasWeaponUses,
             clear: clearUnitWeaponUses,
             prune: pruneUnitWeaponUses,
@@ -55,6 +86,7 @@ export const usePlayStore = defineScopeableStore('play-store', ({ scope }: { sco
             add: addHevStructureDamage,
             remove: removeHevStructureDamage,
             get: getHevStructureDamage,
+            set: setHevStructureDamage,
             hasValues: hevHasStructureDamage,
             clear: clearHevStructureDamage,
             prune: pruneHevStructureDamage,
@@ -67,6 +99,7 @@ export const usePlayStore = defineScopeableStore('play-store', ({ scope }: { sco
             add: addHevArmorDamage,
             remove: removeHevArmorDamage,
             get: getHevArmorDamage,
+            set: setHevArmorDamage,
             hasValues: hevHasArmorDamage,
             clear: clearHevArmorDamage,
             prune: pruneHevArmorDamage,
@@ -79,6 +112,7 @@ export const usePlayStore = defineScopeableStore('play-store', ({ scope }: { sco
             add: addUnitStructureDamage,
             remove: removeUnitStructureDamage,
             get: getUnitStructureDamage,
+            set: setUnitStructureDamage,
             hasValues: unitHasStructureDamage,
             clear: clearUnitStructureDamage,
             prune: pruneUnitStructureDamage,
@@ -91,6 +125,7 @@ export const usePlayStore = defineScopeableStore('play-store', ({ scope }: { sco
             add: addUnitArmorDamage,
             remove: removeUnitArmorDamage,
             get: getUnitArmorDamage,
+            set: setUnitArmorDamage,
             hasValues: unitHasArmorDamage,
             clear: clearUnitArmorDamage,
             prune: pruneUnitArmorDamage,
@@ -107,6 +142,7 @@ export const usePlayStore = defineScopeableStore('play-store', ({ scope }: { sco
             add: addGarrisonWeaponTimesUsed,
             remove: removeGarrisonWeaponTimesUsed,
             get: getGarrisonWeaponTimesUsed,
+            set: setGarrisonWeaponTimesUsed,
             hasValues: garrisonHasWeaponUses,
             clear: clearGarrisonWeaponUses,
             prune: pruneGarrisonWeaponUses,
@@ -119,6 +155,7 @@ export const usePlayStore = defineScopeableStore('play-store', ({ scope }: { sco
             add: addGarrisonStructureDamage,
             remove: removeGarrisonStructureDamage,
             get: getGarrisonStructureDamage,
+            set: setGarrisonStructureDamage,
             hasValues: garrisonHasStructureDamage,
             clear: clearGarrisonStructureDamage,
             prune: pruneGarrisonStructureDamage,
@@ -131,6 +168,7 @@ export const usePlayStore = defineScopeableStore('play-store', ({ scope }: { sco
             add: addGarrisonArmorDamage,
             remove: removeGarrisonArmorDamage,
             get: getGarrisonArmorDamage,
+            set: setGarrisonArmorDamage,
             hasValues: garrisonHasArmorDamage,
             clear: clearGarrisonArmorDamage,
             prune: pruneGarrisonArmorDamage,
@@ -229,6 +267,7 @@ export const usePlayStore = defineScopeableStore('play-store', ({ scope }: { sco
 
         pruneOnSlotChange(hevSlots, pruneHevStructureDamage);
         pruneOnSlotChange(hevSlots, pruneHevArmorDamage);
+        pruneOnSlotChange(hevSlots, pruneHevDestroyed);
         pruneOnSlotChange(hevWeaponSlots, pruneHevWeaponUses);
         pruneOnSlotChange(hevUpgradeSlots, pruneHevUpgradeUses);
 
@@ -293,6 +332,7 @@ export const usePlayStore = defineScopeableStore('play-store', ({ scope }: { sco
             clearGarrisonWeaponUses();
             clearGarrisonStructureDamage();
             clearGarrisonArmorDamage();
+            clearObject(hevDestroyed);
         }
 
         return {
@@ -302,6 +342,7 @@ export const usePlayStore = defineScopeableStore('play-store', ({ scope }: { sco
             hevArmorDamage,
             hevWeaponUses,
             hevUpgradeUses,
+            hevDestroyed,
 
             unitStructureDamage,
             unitArmorDamage,
@@ -313,43 +354,59 @@ export const usePlayStore = defineScopeableStore('play-store', ({ scope }: { sco
 
             gameStarted,
 
+            enableBtnPlusMinus,
+
+            isHevDestroyed,
+            setHevDestroyed,
+            isHevStructureFull,
+
             getHevArmorDamage,
+            setHevArmorDamage,
             addHevArmorDamage,
             removeHevArmorDamage,
 
             getHevStructureDamage,
+            setHevStructureDamage,
             addHevStructureDamage,
             removeHevStructureDamage,
 
             addHevWeaponTimesUsed,
             removeHevWeaponTimesUsed,
             getHevWeaponTimesUsed,
+            setHevWeaponTimesUsed,
 
             addHevUpgradeTimesUsed,
             removeHevUpgradeTimesUsed,
             getHevUpgradeTimesUsed,
+            setHevUpgradeTimesUsed,
 
             addUnitWeaponTimesUsed,
             removeUnitWeaponTimesUsed,
             getUnitWeaponTimesUsed,
+            setUnitWeaponTimesUsed,
 
             getUnitStructureDamage,
+            setUnitStructureDamage,
             addUnitStructureDamage,
             removeUnitStructureDamage,
 
             getUnitArmorDamage,
+            setUnitArmorDamage,
             addUnitArmorDamage,
             removeUnitArmorDamage,
 
             addGarrisonWeaponTimesUsed,
             removeGarrisonWeaponTimesUsed,
             getGarrisonWeaponTimesUsed,
+            setGarrisonWeaponTimesUsed,
 
             getGarrisonStructureDamage,
+            setGarrisonStructureDamage,
             addGarrisonStructureDamage,
             removeGarrisonStructureDamage,
 
             getGarrisonArmorDamage,
+            setGarrisonArmorDamage,
             addGarrisonArmorDamage,
             removeGarrisonArmorDamage,
 

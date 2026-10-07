@@ -2,15 +2,16 @@
 import HEVCard from './ArmyPrint/ArmyPrintCards/HEVCard.vue';
 import SupportAssetWeaponCard from './ArmyPrint/ArmyPrintCards/SupportAssetWeaponCard.vue';
 import SupportAssetUnitCard from './ArmyPrint/ArmyPrintCards/SupportAssetUnitCard.vue';
-import { computed, provide, ref } from 'vue';
+import { computed, provide } from 'vue';
 import { type SupportAssetUnitCardType, type SupportAssetWeaponCardType, useCardStore } from '../store/card-store';
 import { MECH_TEAM, MECH_TEAMS } from '../data/mech-teams';
 import { useArmyListStore } from '../store/army-list-store';
-import { BButton, BModal } from 'bootstrap-vue-next';
-import { usePlayStore } from '../store/play-store';
-import { onBeforeRouteLeave, type RouteLocationNormalized, useRouter } from 'vue-router';
+import BtnClearPlay from './ArmyPlay/BtnClearPlay.vue';
+import PlayLeaveModal from './ArmyPlay/PlayLeaveModal.vue';
+import BtnTogglePlusMinus from './ArmyPlay/BtnTogglePlusMinus.vue';
 
 const cardStore = useCardStore();
+const armyStore = useArmyListStore();
 
 const hevCardsByTeam = computed(() => {
   const mechCardsByTeam = cardStore.mech_cards_by_team;
@@ -29,30 +30,8 @@ const supportAssetCards = computed((): (SupportAssetUnitCardType | SupportAssetW
     ...cardStore.support_asset_weapon_cards,
   ];
 });
-const armyStore = useArmyListStore();
-const playStore = usePlayStore();
 
 provide('play', true);
-const resetModal = ref(false);
-
-const router = useRouter();
-const leaveModal = ref(false);
-let leaveTarget: RouteLocationNormalized | null = null;
-let leaveConfirmed = false;
-
-onBeforeRouteLeave((to) => {
-  if (leaveConfirmed || !playStore.gameStarted) return true;
-  leaveTarget = to;
-  leaveModal.value = true;
-  return false;
-});
-
-function confirmLeave() {
-  if (!leaveTarget) return;
-  leaveConfirmed = true;
-  router.push(leaveTarget.fullPath);
-}
-
 </script>
 <template>
   <div
@@ -61,55 +40,11 @@ function confirmLeave() {
   >
     <div class="output-container">
       <div class="container-fluid gx-0">
-        <BButton
-          @click="resetModal = !resetModal"
-          size="sm"
-          variant="danger"
-          class="mx-3"
-        >
-          Clear
-        </BButton>
-        <BModal
-          v-model="resetModal"
-          centered
-          @ok="playStore.$reset()"
-          ok-variant="danger"
-          title="Clear Play State"
-        >
-          <div class="lead">
-            Are you sure you want to clear all game data?
-          </div>
-        </BModal>
-
-        <BModal
-          v-model="leaveModal"
-          centered
-          @ok="confirmLeave"
-          ok-title="Leave Play Mode"
-          cancel-title="Stay"
-          title="Game in Progress"
-        >
-          <p>
-            Game data (damage and weapon/upgrade uses) is saved and will still be here when you come back.
-            Changes to the army list may affect it:
-          </p>
-          <ul>
-            <li>
-              Removing an HEV, weapon, upgrade, support asset or vehicle clears its game data.
-            </li>
-            <li>
-              Changing a vehicle's weapon choice, upgrade pod or garrison squad clears the game data for that weapon or
-              squad.
-            </li>
-            <li>
-              Changes that lower a maximum (e.g. HEV size, structure/armor mods or faction perks) keep the game data.
-              If it is now over the maximum it is capped the next time you click it.
-            </li>
-            <li>
-              Loading or resetting an army list clears all game data.
-            </li>
-          </ul>
-        </BModal>
+        <div class="mb-2">
+          <BtnClearPlay />
+          <PlayLeaveModal />
+          <BtnTogglePlusMinus />
+        </div>
 
         <h4 class="px-3">{{ armyStore.name || 'Unnamed Army List' }}</h4>
 

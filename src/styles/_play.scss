@@ -61,13 +61,10 @@
         max-width: calc(4 * 25px);
       }
 
-      // hev armor/structure: wrap to fit, at most 5 slots (24px + 1px margin) per row
+      // hev armor/structure: 5 slots per row, stretched to fill the container width
       .row-damage .hp-container {
         display: flex;
         flex-wrap: wrap;
-        // keep the print padding-left out of the max-width
-        box-sizing: content-box;
-        max-width: calc(5 * 25px);
 
         .hp-row {
           display: contents;
@@ -86,6 +83,18 @@
         background: #dfe7f1;
       }
 
+      // 20% minus the 1px slot margin
+      .row-damage .hp {
+        box-sizing: border-box;
+        width: calc(20% - 1px);
+        height: auto;
+        aspect-ratio: 1;
+      }
+
+      .row-damage .structure-systems {
+        font-size: 100%;
+      }
+
       .row-damage,
       .table-stats,
       .upgrades {
@@ -93,6 +102,16 @@
           background: #272727;
           border-color: #272727;
           color: #fff;
+        }
+      }
+
+      .hp-structure {
+        .hp-container {
+          padding-right: 0.5rem;
+        }
+        &.filled {
+          background: #321111;
+          border-color: #321111;
         }
       }
 

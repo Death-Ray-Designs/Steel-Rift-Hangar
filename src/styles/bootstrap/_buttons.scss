@@ -87,6 +87,14 @@
   );
 }
 
+.btn-success-light {
+  @include button-variant(
+          tint-color($success, 40%),
+          tint-color($success, 40%),
+          #000,
+  );
+}
+
 .btn-default {
   @include button-variant(
           $background: $light,

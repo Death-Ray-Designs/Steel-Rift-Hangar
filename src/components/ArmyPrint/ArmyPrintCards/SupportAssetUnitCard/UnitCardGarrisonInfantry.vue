@@ -6,6 +6,7 @@ import FormatInches from '../../../functional/format-inches.vue';
 import { formatCardRef } from '../../../functional/formatters.js';
 import UnitCardHalfHeader from './UnitCardHalfHeader.vue';
 import { usePlayStore } from '../../../../store/play-store';
+import { clickedBoxValue } from '../../../../store/helpers/store-counters';
 
 const { unitAttachmentId } = defineProps<{
   unitAttachmentId: number
@@ -26,30 +27,30 @@ const hasArmor = computed(() => !!units.value.find((unit) => unit.armor));
 const play = inject('play', false);
 
 const {
-  addGarrisonWeaponTimesUsed,
-  removeGarrisonWeaponTimesUsed,
+  setGarrisonWeaponTimesUsed,
   getGarrisonWeaponTimesUsed,
-  addGarrisonArmorDamage,
-  removeGarrisonArmorDamage,
+  setGarrisonArmorDamage,
   getGarrisonArmorDamage,
-  addGarrisonStructureDamage,
-  removeGarrisonStructureDamage,
+  setGarrisonStructureDamage,
   getGarrisonStructureDamage,
 } = usePlayStore();
 
 function clickArmor(vehicleId: number, garrisonIndex: number, i: number) {
   if (!play) return;
-  i <= getGarrisonArmorDamage(unitAttachmentId, vehicleId, garrisonIndex) ? removeGarrisonArmorDamage(unitAttachmentId, vehicleId, garrisonIndex) : addGarrisonArmorDamage(unitAttachmentId, vehicleId, garrisonIndex);
+  const damage = getGarrisonArmorDamage(unitAttachmentId, vehicleId, garrisonIndex);
+  setGarrisonArmorDamage(clickedBoxValue(i, damage), unitAttachmentId, vehicleId, garrisonIndex);
 }
 
 function clickStructure(vehicleId: number, garrisonIndex: number, i: number) {
   if (!play) return;
-  i <= getGarrisonStructureDamage(unitAttachmentId, vehicleId, garrisonIndex) ? removeGarrisonStructureDamage(unitAttachmentId, vehicleId, garrisonIndex) : addGarrisonStructureDamage(unitAttachmentId, vehicleId, garrisonIndex);
+  const damage = getGarrisonStructureDamage(unitAttachmentId, vehicleId, garrisonIndex);
+  setGarrisonStructureDamage(clickedBoxValue(i, damage), unitAttachmentId, vehicleId, garrisonIndex);
 }
 
 function clickWeapon(vehicleId: number, garrisonIndex: number, weaponIndex: number, i: number) {
   if (!play) return;
-  i <= getGarrisonWeaponTimesUsed(unitAttachmentId, vehicleId, garrisonIndex, weaponIndex) ? removeGarrisonWeaponTimesUsed(unitAttachmentId, vehicleId, garrisonIndex, weaponIndex) : addGarrisonWeaponTimesUsed(unitAttachmentId, vehicleId, garrisonIndex, weaponIndex);
+  const used = getGarrisonWeaponTimesUsed(unitAttachmentId, vehicleId, garrisonIndex, weaponIndex);
+  setGarrisonWeaponTimesUsed(clickedBoxValue(i, used), unitAttachmentId, vehicleId, garrisonIndex, weaponIndex);
 }
 
 </script>
