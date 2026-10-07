@@ -14,6 +14,7 @@ export const usePlayStore = defineScopeableStore('play-store', ({ scope }: { sco
         const factionStore = useFactionStore(scope);
 
         const enableBtnPlusMinus = ref(true);
+        const showCritReference = ref(true);
 
         // cosmetic only: hides the hev card content in play mode
         const hevDestroyed: Record<string, boolean> = reactive({});
@@ -355,6 +356,7 @@ export const usePlayStore = defineScopeableStore('play-store', ({ scope }: { sco
             gameStarted,
 
             enableBtnPlusMinus,
+            showCritReference,
 
             isHevDestroyed,
             setHevDestroyed,

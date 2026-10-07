@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, inject } from 'vue';
-import { unitTraitDisplayName } from '../../../../data/unit-traits.js';
+import { unitTraitInfo } from '../../../../data/unit-traits.js';
+import CardTraitToolTip from '../CardParts/CardTraitToolTip.vue';
 import { useSupportAssetUnitsStore } from '../../../../store/support-asset-units-store';
 import FormatInches from '../../../functional/format-inches.vue';
 import { formatCardRef } from '../../../functional/formatters.js';
@@ -106,7 +107,7 @@ function clickWeapon(vehicleId: number, garrisonIndex: number, weaponIndex: numb
         >
           <div class="text-nowrap use-group use-group-stat" v-if="item.armor"><span
             class="use use-armor"
-            :class="{filled: i <= getGarrisonArmorDamage(unitAttachmentId, item.vehicle_id, item.garrison_index)}"
+            :class="{filled: play && i <= getGarrisonArmorDamage(unitAttachmentId, item.vehicle_id, item.garrison_index)}"
             v-for="i in item.armor"
             @click="clickArmor(item.vehicle_id, item.garrison_index, i)"
           >&nbsp;</span>
@@ -115,7 +116,7 @@ function clickWeapon(vehicleId: number, garrisonIndex: number, weaponIndex: numb
         <td class="text-start">
           <div class="text-nowrap use-group use-group-stat" v-if="item.structure"><span
             class="use use-structure"
-            :class="{filled: i <= getGarrisonStructureDamage(unitAttachmentId, item.vehicle_id, item.garrison_index)}"
+            :class="{filled: play && i <= getGarrisonStructureDamage(unitAttachmentId, item.vehicle_id, item.garrison_index)}"
             v-for="i in item.structure"
             @click="clickStructure(item.vehicle_id, item.garrison_index, i)"
           >&nbsp;</span>
@@ -123,12 +124,13 @@ function clickWeapon(vehicleId: number, garrisonIndex: number, weaponIndex: numb
         </td>
         <td class="text-start small">
           <div
-            class="d-inline text-nowrap"
+            class="text-nowrap"
+            :class="play ? 'd-block' : 'd-inline'"
             v-for="(weapon, index) in item.weapons"
           >
             {{ weapon.display_name }}
             <span class="text-nowrap" v-if="weapon.max_uses">&nbsp;<span
-              :class="{filled: i <= getGarrisonWeaponTimesUsed(unitAttachmentId, item.vehicle_id, item.garrison_index, index)}"
+              :class="{filled: play && i <= getGarrisonWeaponTimesUsed(unitAttachmentId, item.vehicle_id, item.garrison_index, index)}"
               class="use use-weapon" v-for="i in weapon.max_uses"
               @click="clickWeapon(item.vehicle_id, item.garrison_index, index, i)"
             >&nbsp;</span></span><span
@@ -137,7 +139,9 @@ function clickWeapon(vehicleId: number, garrisonIndex: number, weaponIndex: numb
           </div>
         </td>
         <td class="text-start small">
-          {{ item.traits.map(t => unitTraitDisplayName(t)).join(', ') }}
+          <template v-for="(trait, index) in item.traits">
+            <CardTraitToolTip :trait="unitTraitInfo(trait)" /><span v-if="index !== item.traits.length - 1">, </span>
+          </template>
         </td>
       </tr>
       </tbody>

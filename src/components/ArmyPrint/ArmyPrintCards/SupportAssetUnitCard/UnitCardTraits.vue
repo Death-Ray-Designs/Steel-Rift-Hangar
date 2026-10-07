@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import type { Order } from '../../../../data/orders';
-import { UNIT_TRAIT, unitTraitDisplayName } from '../../../../data/unit-traits.js';
+import { UNIT_TRAIT, unitTraitInfo } from '../../../../data/unit-traits.js';
+import CardTraitToolTip from '../CardParts/CardTraitToolTip.vue';
+import CardToolTip from '../CardParts/CardToolTip.vue';
 import type { Trait } from '../../../../types';
 
 const { traits, orders } = defineProps<{
@@ -15,10 +17,14 @@ const { traits, orders } = defineProps<{
       Traits
     </div>
     <div class="card-description">
-      {{ traits.map(t => unitTraitDisplayName(t)).join(', ') }}
+      <template v-for="(trait, index) in traits">
+        <CardTraitToolTip :trait="unitTraitInfo(trait)" /><span v-if="index !== traits.length - 1">, </span>
+      </template>
       <span v-if="orders.length">
         <span class="fw-bold"> Special Orders: </span>
-        {{ orders.map(o => o.display_name).join(', ') }}
+        <template v-for="(order, index) in orders">
+          <CardToolTip :enabled="!!order.description">{{ order.display_name }}<template #content>{{ order.description }}</template></CardToolTip><span v-if="index !== orders.length - 1">, </span>
+        </template>
       </span>
     </div>
   </template>

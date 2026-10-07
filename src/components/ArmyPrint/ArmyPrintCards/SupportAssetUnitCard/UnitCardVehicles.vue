@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { chunk } from 'es-toolkit';
 import { computed, inject } from 'vue';
-import { UNIT_TRAIT, unitTraitDisplayName } from '../../../../data/unit-traits.js';
+import { UNIT_TRAIT, unitTraitInfo } from '../../../../data/unit-traits.js';
+import CardTraitToolTip from '../CardParts/CardTraitToolTip.vue';
 import { useSupportAssetUnitsStore } from '../../../../store/support-asset-units-store';
-import type { Trait } from '../../../../types';
+import type { TraitInfo } from '../../../../types';
 import FormatInches from '../../../functional/format-inches.vue';
 import { formatCardRef } from '../../../functional/formatters.js';
 import UnitCardHalfHeader from './UnitCardHalfHeader.vue';
@@ -31,9 +32,15 @@ const statArray = (stat: number) => {
   return chunk(Array(stat).fill(0), 4);
 };
 
-function filterTraits(traits: Trait<UNIT_TRAIT>[]) {
-  return traits.filter(t => t.id !== UNIT_TRAIT.GARRISON);
-}
+const vehicleTraits = computed(() => {
+  const result: Record<number, TraitInfo<UNIT_TRAIT>[]> = {};
+  unit.value.vehicles.forEach(vehicle => {
+    result[vehicle.id] = vehicle.traits
+      .filter(t => t.id !== UNIT_TRAIT.GARRISON)
+      .map(unitTraitInfo);
+  });
+  return result;
+});
 
 const play = inject('play', false);
 
@@ -47,11 +54,11 @@ const {
 } = usePlayStore();
 
 function isStructureDamaged(damageKey: number, chunkIndex: number, index: number) {
-  return chunkIndex * 4 + index < getUnitStructureDamage(unitAttachmentId, damageKey);
+  return play && chunkIndex * 4 + index < getUnitStructureDamage(unitAttachmentId, damageKey);
 }
 
 function isArmorDamaged(damageKey: number, chunkIndex: number, index: number) {
-  return chunkIndex * 4 + index < getUnitArmorDamage(unitAttachmentId, damageKey);
+  return play && chunkIndex * 4 + index < getUnitArmorDamage(unitAttachmentId, damageKey);
 }
 
 function clickArmorDamaged(itemId: number, chunkIndex: number, index: number) {
@@ -149,7 +156,7 @@ function clickWeaponUse(itemId: number, weaponIndex: number, i: number) {
           <div v-for="(weapon, index) in item.weapons">
             {{ weapon.display_name }}
             <template v-if="weapon.max_uses">&nbsp;<span class="text-nowrap"><span
-              :class="{filled: i <= getUnitWeaponTimesUsed(unitAttachmentId, item.id, index)}"
+              :class="{filled: play && i <= getUnitWeaponTimesUsed(unitAttachmentId, item.id, index)}"
               class="use use-weapon" v-for="i in weapon.max_uses"
               @click="clickWeaponUse(item.id, index, i)"
             >&nbsp;</span></span></template>
@@ -177,8 +184,10 @@ function clickWeaponUse(itemId: number, weaponIndex: number, i: number) {
             {{ squadDisplayName }}
           </div>
         </td>
-        <td class="text-start small" v-if="filterTraits(item.traits).length">
-          {{ filterTraits(item.traits).map(t => unitTraitDisplayName(t)).join(', ') }}
+        <td class="text-start small" v-if="vehicleTraits[item.id].length">
+          <template v-for="(trait, index) in vehicleTraits[item.id]">
+            <CardTraitToolTip :trait="trait" /><span v-if="index !== vehicleTraits[item.id].length - 1">, </span>
+          </template>
         </td>
       </tr>
       </tbody>

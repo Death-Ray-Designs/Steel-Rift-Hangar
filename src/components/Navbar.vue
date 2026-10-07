@@ -12,7 +12,7 @@ const { isPlayLayout } = useRouteLayout();
     <div class="container-lg">
       <div class="d-lg-flex px-4">
 
-        <div class="col-xl-3 flex-lg-shrink-1">
+        <div :class="isPlayLayout ? 'd-flex align-items-center flex-grow-1' : 'col-xl-3 flex-lg-shrink-1'">
           <a class="navbar-brand" href="#">
             <img :src="logoSvg" height="25" class="logo" alt="Steel Rift: Hangar logo" />
           </a>
@@ -24,11 +24,12 @@ const { isPlayLayout } = useRouteLayout();
           <template v-if="isPlayLayout">
             <router-link
               :to="{ name: ROUTE_HOME }"
-              class="btn btn-sm btn-default"
+              class="btn btn-sm btn-default text-nowrap me-1"
               activeClass="active"
             >
               Exit
             </router-link>
+            <BtnColorMode class="ms-auto" />
 
           </template>
         </div>

@@ -9,6 +9,7 @@ import { useArmyListStore } from '../store/army-list-store';
 import BtnClearPlay from './ArmyPlay/BtnClearPlay.vue';
 import PlayLeaveModal from './ArmyPlay/PlayLeaveModal.vue';
 import BtnTogglePlusMinus from './ArmyPlay/BtnTogglePlusMinus.vue';
+import BtnToggleCritReference from './ArmyPlay/BtnToggleCritReference.vue';
 
 const cardStore = useCardStore();
 const armyStore = useArmyListStore();
@@ -34,16 +35,14 @@ const supportAssetCards = computed((): (SupportAssetUnitCardType | SupportAssetW
 provide('play', true);
 </script>
 <template>
-  <div
-    class="page-previews-container play-container"
-    data-bs-theme="light"
-  >
+  <div class="page-previews-container play-container">
     <div class="output-container">
       <div class="container-fluid gx-0">
         <div class="mb-2">
           <BtnClearPlay />
           <PlayLeaveModal />
           <BtnTogglePlusMinus />
+          <BtnToggleCritReference class="ms-1" />
         </div>
 
         <h4 class="px-3">{{ armyStore.name || 'Unnamed Army List' }}</h4>

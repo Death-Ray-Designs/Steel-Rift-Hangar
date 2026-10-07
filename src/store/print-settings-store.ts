@@ -27,6 +27,7 @@ export const usePrintSettingsStore = defineScopeableStore('print-settings', ({ s
         const include_faction_perk_1_card = ref(false);
         const include_faction_perk_2_card = ref(false);
         const separate_reference_cards_page = ref(false);
+        const edit_card_preview_dark_mode = ref(false);
 
         const print_mode = ref(PRINT_MODE_CARDS);
         const print_mode_display_name = computed(() => PRINT_MODES[print_mode.value].display_name);
@@ -67,6 +68,7 @@ export const usePrintSettingsStore = defineScopeableStore('print-settings', ({ s
             include_faction_perk_1_card,
             include_faction_perk_2_card,
             separate_reference_cards_page,
+            edit_card_preview_dark_mode,
 
             $reset,
         };
@@ -81,6 +83,7 @@ export const usePrintSettingsStore = defineScopeableStore('print-settings', ({ s
                     'include_faction_perk_1_card',
                     'include_faction_perk_2_card',
                     'separate_reference_cards_page',
+                    'edit_card_preview_dark_mode',
                 ],
             }),
         };

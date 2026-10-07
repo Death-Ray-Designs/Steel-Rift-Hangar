@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import CardTraitToolTip from '../CardParts/CardTraitToolTip.vue';
+import CardToolTip from '../CardParts/CardToolTip.vue';
 import { computed, inject, watch } from 'vue';
 import { type MechArmorUpgradeInfo } from '../../../../data/mech-armor-upgrades';
 import { MECH_MOBILITIES, MECH_MOBILITY } from '../../../../data/mech-mobility';
@@ -26,6 +28,7 @@ const { mechId } = defineProps<{
 
 type UpgradeItem = {
   display_name?: string,
+  description?: string,
   card_modifier_note?: string,
   traits?: TraitInfo<UPGRADE_TRAIT>[],
   is_team_perk?: boolean,
@@ -105,7 +108,7 @@ const orders = computed(() => {
 watch([upgrades, orders, armorUpgradesList], () => emit('contentChanged'), { flush: 'post' });
 
 function isUpgradeUsed(upgradeAttachmentId: number | undefined, index: number) {
-  return upgradeAttachmentId !== undefined && index <= playStore.getHevUpgradeTimesUsed(mechId, upgradeAttachmentId);
+  return play && upgradeAttachmentId !== undefined && index <= playStore.getHevUpgradeTimesUsed(mechId, upgradeAttachmentId);
 }
 
 function clickUpgradeUse(upgradeAttachmentId: number | undefined, index: number) {
@@ -126,7 +129,7 @@ function clickUpgradeUse(upgradeAttachmentId: number | undefined, index: number)
     </div>
     <div class="upgrades">
       <span v-for="(upgrade, index) in upgrades">
-        {{ upgrade.display_name }}<small v-if="upgrade.card_modifier_note"> ({{ upgrade.card_modifier_note }}) </small>
+        <CardToolTip :enabled="!!upgrade.description">{{ upgrade.display_name }}<template #content>{{ upgrade.description }}</template></CardToolTip><small v-if="upgrade.card_modifier_note"> ({{ upgrade.card_modifier_note }}) </small>
         <template v-if="upgrade.is_team_perk">
           <span>
             <SvgIcon name="team-perk" size="1.3em" />
@@ -144,7 +147,7 @@ function clickUpgradeUse(upgradeAttachmentId: number | undefined, index: number)
           </template>
           <template v-if="upgrade.traits?.length">:</template>
           <template v-for="trait in upgrade.traits">
-            {{ trait.display_name }}
+            <CardTraitToolTip :trait="trait" />
           </template>
           <span v-if="index !== upgrades.length -1">, </span>
         </template>
@@ -153,14 +156,14 @@ function clickUpgradeUse(upgradeAttachmentId: number | undefined, index: number)
       <span v-if="armorUpgradesList.length > 1">
         <span class="fw-bold"> Armor: </span>
         <template v-for="(armor, index) in armorUpgradesList">
-          {{ armor.display_name }}<small v-if="armor.card_modifier_note"> ({{ armor.card_modifier_note }}) </small>
+          <CardToolTip :enabled="!!armor.description">{{ armor.display_name }}<template #content>{{ armor.description }}</template></CardToolTip><small v-if="armor.card_modifier_note"> ({{ armor.card_modifier_note }}) </small>
           <span v-if="index !== armorUpgradesList.length -1">, </span>
         </template>
       </span>
       <span v-if="orders.length">
         <span class="fw-bold"> Special Orders: </span>
         <span v-for="(order, index) in orders">
-          {{ order.display_name }}
+          <CardToolTip :enabled="!!order.description">{{ order.display_name }}<template #content>{{ order.description }}</template></CardToolTip>
           <span v-if="index !== orders.length -1">, </span>
         </span>
       </span>

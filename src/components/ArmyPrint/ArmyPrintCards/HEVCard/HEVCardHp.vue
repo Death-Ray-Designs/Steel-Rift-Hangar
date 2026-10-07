@@ -9,6 +9,8 @@ import { usePlayStore } from '../../../../store/play-store';
 import { clickedBoxValue } from '../../../../store/helpers/store-counters';
 import { splitHevStructureIntoCriticalChunkSizes } from '../../../../data/hev-helpers';
 import BtnPlusMinus from '../../../ArmyPlay/BtnPlusMinus.vue';
+import CardToolTip from '../CardParts/CardToolTip.vue';
+import { BACKUP_SYSTEMS, FRAGILE_INTERNALS } from '../../../../data/rules';
 
 const mechStore = useMechStore();
 const factionStore = useFactionStore();
@@ -21,10 +23,10 @@ const info = computed(() => mechStore.getMechInfo(mechId)!);
 
 const structureSystem = computed(() => {
   if (info.value.has_fragile_internals) {
-    return 'Fragile Internals';
+    return { display_name: 'Fragile Internals', description: FRAGILE_INTERNALS };
   }
   if (info.value.has_backup_systems) {
-    return 'Backup Systems';
+    return { display_name: 'Backup Systems', description: BACKUP_SYSTEMS };
   }
 });
 
@@ -115,6 +117,8 @@ const armorUpgrades = computed(() => {
 const play = inject('play', false);
 
 const playStore = usePlayStore();
+// in play mode the crit reference can be hidden to give the damage boxes more room
+const hideCritReference = computed(() => play && !playStore.showCritReference);
 const {
   addHevStructureDamage,
   addHevArmorDamage,
@@ -130,11 +134,11 @@ const armorDamage = computed(() => getHevArmorDamage(mechId));
 const structureDamage = computed(() => getHevStructureDamage(mechId));
 
 function isArmorDamaged(index: number) {
-  return index + 1 <= armorDamage.value;
+  return play && index + 1 <= armorDamage.value;
 }
 
 function isStructureDamaged(index: number) {
-  return index + 1 <= structureDamage.value;
+  return play && index + 1 <= structureDamage.value;
 }
 
 function clickStructure(index: number) {
@@ -149,17 +153,21 @@ function clickArmor(index: number) {
 </script>
 <template>
   <div class="row row-damage" :class="play ? 'g-2' : 'g-1'">
-    <div class="col-5">
+    <div :class="hideCritReference ? 'col-6' : 'col-5'">
       <div class="hp-heading">
         ARMOR <small
         class="fw-light"
         v-if="armorUpgrades"
       >
         <template v-if="armorUpgrades.length === 1">
-          ({{ armorUpgrades[0].display_name }})
+          (<CardToolTip :enabled="!!armorUpgrades[0].description">{{ armorUpgrades[0].display_name }}<template #content>{{ armorUpgrades[0].description }}</template></CardToolTip>)
         </template>
         <template v-else-if="armorUpgrades.length > 1">
-          Multiple ({{ armorUpgrades.length }})
+          <CardToolTip>Multiple ({{ armorUpgrades.length }})<template #content>
+            <div v-for="armor in armorUpgrades" :key="armor.id">
+              <span class="fw-bold">{{ armor.display_name }}:</span> {{ armor.description }}
+            </div>
+          </template></CardToolTip>
         </template>
       </small>
       </div>
@@ -182,7 +190,7 @@ function clickArmor(index: number) {
         </div>
       </div>
     </div>
-    <div class="col-7">
+    <div :class="hideCritReference ? 'col-6' : 'col-7'">
       <div class="d-flex">
         <div class="hp-structure flex-grow-1">
           <div class="hp-heading ps-0">
@@ -192,10 +200,11 @@ function clickArmor(index: number) {
           <BtnPlusMinus
             @add="addHevStructureDamage(mechId)"
             @remove="removeHevStructureDamage(mechId)"
-            class="mb-1 d-inline-flex w-100 pe-2"
+            class="mb-1 d-inline-flex w-100"
+            :class="hideCritReference ? '' : 'pe-2'"
           />
 
-          <div class="hp-container">
+          <div class="hp-container" :class="play && !hideCritReference ? 'pe-2' : ''">
             <div class="hp-row" v-for="row in structureHp">
               <span
                 class="hp hp-structure"
@@ -209,10 +218,10 @@ function clickArmor(index: number) {
             </div>
           </div>
           <div class="structure-systems" v-if="structureSystem">
-            {{ structureSystem }}
+            <CardToolTip>{{ structureSystem.display_name }}<template #content>{{ structureSystem.description }}</template></CardToolTip>
           </div>
         </div>
-        <div class="crit-container">
+        <div class="crit-container" v-if="!hideCritReference">
           <div class="crit-heading">
             CRIT
           </div>

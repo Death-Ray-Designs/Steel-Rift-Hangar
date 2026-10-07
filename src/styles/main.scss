@@ -151,9 +151,11 @@ body[data-bs-theme='dark'] {
 }
 
 .text-tooltip {
-  &:hover {
-    text-decoration: underline;
-    cursor: pointer;
+  @media (hover: hover) {
+    &:hover {
+      text-decoration: underline;
+      cursor: pointer;
+    }
   }
 }
 
@@ -220,8 +222,18 @@ body[data-bs-theme='dark'] {
   padding-bottom: 0.25rem;
 }
 
+// scoped to the nearest data-bs-theme so light-forced cards (print pages) stay readable in dark mode
+:root,
+[data-bs-theme='light'] {
+  --number-damaged-color: #{shade-color($danger, 50%)};
+}
+
+[data-bs-theme='dark'] {
+  --number-damaged-color: #{tint-color($danger, 70%)};
+}
+
 .number-damaged {
-  color: shade-color($danger, 50%);
+  color: var(--number-damaged-color);
   background: rgba(255, 0, 0, 0.2);
 }
 

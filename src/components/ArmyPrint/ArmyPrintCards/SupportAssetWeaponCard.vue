@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { traitDisplayNames } from '../../../data/data-helpers';
 import type { SUPPORT_ASSET_WEAPON } from '../../../data/support-asset-weapons';
 import { WEAPON_TRAIT } from '../../../data/weapon-traits.js';
 import { findById } from '../../../store/helpers/collection-helper';
@@ -9,6 +8,8 @@ import SvgIcon from '../../UI/Icon.vue';
 import SupportAssetWeaponDamageFormatter from '../../UI/SupportAssetWeaponDamageFormatter.vue';
 import CardFooter from './CardParts/CardFooter.vue';
 import CardHeader from './CardParts/CardHeader.vue';
+import CardTraitToolTip from './CardParts/CardTraitToolTip.vue';
+import CardToolTip from './CardParts/CardToolTip.vue';
 
 const supportAssetStore = useSupportAssetWeaponsStore();
 
@@ -21,8 +22,7 @@ const info = computed(() => supportAssetStore.getSupportAssetInfo(supportAssetId
 const weapon = computed(() => info.value.off_table_weapon);
 
 const traits = computed(() => {
-  const filteredTraits = weapon.value.traits.filter(trait => trait.id !== WEAPON_TRAIT.LIMITED);
-  return traitDisplayNames(filteredTraits);
+  return weapon.value.traits.filter(trait => trait.id !== WEAPON_TRAIT.LIMITED);
 });
 
 const max_uses = computed(() => {
@@ -71,7 +71,9 @@ const max_uses = computed(() => {
             />
           </td>
           <td class="text-start">
-            {{ traits }}
+            <template v-for="(trait, index) in traits">
+              <CardTraitToolTip :trait="trait" /><span v-if="index !== traits.length - 1">, </span>
+            </template>
           </td>
         </tr>
         </tbody>
@@ -82,7 +84,14 @@ const max_uses = computed(() => {
         </div>
         <div class="card-description">
           <div v-for="note in info.notes">
-            {{ note.display_name }}
+            <CardToolTip :enabled="!!note.description">
+              {{ note.display_name }}
+              <template #title>
+                <template v-if="note.is_team_perk">Team Perk</template>
+                <template v-else-if="note.is_faction_perk">Faction Perk</template>
+              </template>
+              <template #content>{{ note.description }}</template>
+            </CardToolTip>
             <SvgIcon v-if="note.is_team_perk" name="team-perk" size="14px" />
             <span class="material-symbols-outlined" v-if="note.is_faction_perk" style="font-size: 12px">flag</span>
           </div>

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import CardTraitToolTip from '../CardParts/CardTraitToolTip.vue';
 import { sortBy } from 'es-toolkit';
 import { computed } from 'vue';
 import { WEAPON_TRAIT } from '../../../../data/weapon-traits.js';
@@ -59,7 +60,7 @@ const sortedWeapons = computed(() => sortBy<BasicWeaponInfo>(weapons, ['display_
       </td>
       <td class="text-start small">
         <div v-for="(trait, index) in filterTraits(weapon.traits)">
-          {{ trait.display_name }}<span v-if="index !== filterTraits(weapon.traits).length - 1">, </span>
+          <CardTraitToolTip :trait="trait" /><span v-if="index !== filterTraits(weapon.traits).length - 1">, </span>
         </div>
       </td>
     </tr>

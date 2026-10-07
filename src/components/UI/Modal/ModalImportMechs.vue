@@ -124,7 +124,7 @@ function importSelectedMechs() {
         <div class="card m-1"
              v-for="item in mechList">
           <div class="card-body">
-            <div class="output-container">
+            <div class="output-container" data-bs-theme="light">
               <HEVCard
                 :mech-id="item.mechId"
                 :store-scope="SCOPE"

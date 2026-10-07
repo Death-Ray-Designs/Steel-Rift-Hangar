@@ -12,10 +12,13 @@ import IconValidationError from '../UI/IconValidationError.vue';
 import BtnMoveMechToTeam from './Mech/BtnMoveMechToTeam.vue';
 import MechStats from './Mech/MechStats.vue';
 import MechPreferredTeamDropDown from './Mech/MechStats/MechPreferredTeamDropDown.vue';
+import BtnToggleCardPreviewDarkMode from './Mech/BtnToggleCardPreviewDarkMode.vue';
+import { usePrintSettingsStore } from '../../store/print-settings-store';
 
 const mechStore = useMechStore();
 const validationStore = useValidationStore();
 const teamStore = useTeamStore();
+const printSettingsStore = usePrintSettingsStore();
 
 const {
   mechId,
@@ -141,7 +144,12 @@ const showPreferredTeam = computed(() => teamId.value === MECH_TEAM.SHELF);
           <MechStats :mech-id="mechId" />
           <div class="output-container ms-3">
             <div class="fw-bold mb-2 pt-2 text-light">Card Preview</div>
-            <HEVCard :mech-id="mechId" class="shadow" />
+            <HEVCard
+              :mech-id="mechId"
+              class="shadow"
+              :data-bs-theme="printSettingsStore.edit_card_preview_dark_mode ? 'dark' : 'light'"
+            />
+            <BtnToggleCardPreviewDarkMode class="mt-2" />
             <MechPreferredTeamDropDown :mech-id="mechId" v-if="teamId === MECH_TEAM.SHELF" />
           </div>
         </div>

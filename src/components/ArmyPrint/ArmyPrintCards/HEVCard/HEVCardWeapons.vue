@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import CardTraitToolTip from '../CardParts/CardTraitToolTip.vue';
 import { computed, inject, watch } from 'vue';
 import { MECH_UPGRADE } from '../../../../data/mech-upgrades.js';
 import { UPGRADE_TRAIT } from '../../../../data/upgrade-traits.js';
@@ -128,7 +129,7 @@ const hasDamageCritical = computed(() => {
         >
           <span
             class="use use-weapon"
-            :class="{filled: i <= getUses(weapon)}"
+            :class="{filled: play && i <= getUses(weapon)}"
             v-for="i in weapon.max_uses"
             :key="i"
             @click="clickUse(weapon, i)"
@@ -158,7 +159,7 @@ const hasDamageCritical = computed(() => {
         :class="weapon.shouldShrinkTraits ? 'small-traits' : ''"
       >
         <div v-for="(trait, index) in weapon.traits">
-          {{ trait.card_display_name ?? trait.display_name }}<span v-if="index !== weapon.traits.length - 1">, </span>
+          <CardTraitToolTip :trait="trait">{{ trait.card_display_name ?? trait.display_name }}</CardTraitToolTip><span v-if="index !== weapon.traits.length - 1">, </span>
         </div>
       </td>
     </tr>

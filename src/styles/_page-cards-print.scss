@@ -24,15 +24,38 @@ $import-card-height: $card-height * 1.4;
   box-sizing: content-box;
 }
 
-@include color-mode(dark) {
-  body .output-container {
-    --bs-body-color: #000;
-  }
+// card colors are scoped to the nearest data-bs-theme so previews follow the color mode
+// while containers forced to data-bs-theme="light" (print pages) stay light
+:root,
+[data-bs-theme='light'] {
+  --card-color: #000;
+  --card-subtitle-color: #545454;
+  --card-muted-color: #808080;
+  --card-border-color: #000;
+  --card-border-subtle-color: #444;
+  --section-heading-bg: #ddd;
+  --sub-heading-bg: #eee;
+  --card-outline-color: #ccc;
+  --card-bg: #fff;
+  --card-selection-bg: #b7ecff;
+}
+
+[data-bs-theme='dark'] {
+  --card-color: #{$body-color-dark};
+  --card-subtitle-color: #adb5bd;
+  --card-muted-color: #8c8c8c;
+  --card-border-color: #ced4da;
+  --card-border-subtle-color: #6c757d;
+  --section-heading-bg: #343a40;
+  --sub-heading-bg: #2b3035;
+  --card-outline-color: #495057;
+  --card-bg: #{$body-bg-dark};
+  --card-selection-bg: #1f5a73;
 }
 
 body .output-container {
   &::selection {
-    background: #b7ecff;
+    background: var(--card-selection-bg);
   }
 }
 
@@ -60,13 +83,9 @@ body .output-container {
 
 .output-container {
 
-  --section-heading-bg: #ddd;
-  --sub-heading-bg: #eee;
-  --card-outline-color: #ccc;
-  --card-bg: #fff;
-  --bs-body-color: #000;
+  --bs-body-color: var(--card-color);
 
-  color: #000;
+  color: var(--card-color);
   font-size: 10pt;
 
   .shrink-text-90 {
@@ -83,6 +102,8 @@ body .output-container {
     font-family: $font-outfit;
     outline: 1px solid var(--card-outline-color);
     background: var(--card-bg);
+    // re-resolve against the card's own data-bs-theme when it overrides its container's
+    color: var(--card-color);
 
     .card-content-container {
       padding: 4pt;
@@ -130,7 +151,7 @@ body .output-container {
 
   .game-card-subtitle {
     font-weight: $font-weight-light;
-    color: rgb(84, 84, 84);
+    color: var(--card-subtitle-color);
   }
 
   .unit-info {
@@ -230,7 +251,7 @@ body .output-container {
       flex-shrink: 1;
       width: 10pt;
       height: 10pt;
-      border: 1.2pt solid #000;
+      border: 1.2pt solid var(--card-border-color);
       margin: 0 1px 1px 0;
       // shouldn't change size with shrink
       font-size: 6pt;
@@ -243,7 +264,7 @@ body .output-container {
 
       &.hp-armor {
         border-radius: $armor-border-radius;
-        color: #808080;
+        color: var(--card-muted-color);
         font-size: 60%;
       }
 
@@ -315,7 +336,7 @@ body .output-container {
       td {
         font-size: 70%;
         text-align: center;
-        border-bottom: .1pt solid #444;
+        border-bottom: .1pt solid var(--card-border-subtle-color);
         padding: 1pt 2pt;
 
         vertical-align: top;
@@ -348,7 +369,7 @@ body .output-container {
     display: inline-block;
     width: 10pt;
     height: 10pt;
-    border: 1.2pt solid #444;
+    border: 1.2pt solid var(--card-border-subtle-color);
     margin: 0 1px 1px 0;
     // shouldn't change size
     font-size: 6pt;
@@ -373,7 +394,7 @@ body .output-container {
     display: inline-block;
     width: 10pt;
     height: 10pt;
-    border: 1.2pt solid #000;
+    border: 1.2pt solid var(--card-border-color);
     border-radius: 1000px;
     margin: 0 1px 1px 0;
     // shouldn't change size
