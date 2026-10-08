@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { BACKUP_SYSTEMS, FRAGILE_INTERNALS } from '../../../data/rules';
+import { BACKUP_SYSTEMS, FRAGILE_INTERNALS } from '../../../data/mech-structure-systems';
 import { useMechStore } from '../../../store/mech-store';
 
 const mechStore = useMechStore();
@@ -10,11 +10,11 @@ const systems = computed(() => {
   const results = [];
 
   if (infos.some(info => info.has_backup_systems)) {
-    results.push({ display_name: 'Backup Systems', description: BACKUP_SYSTEMS });
+    results.push(BACKUP_SYSTEMS);
   }
 
   if (infos.some(info => info.has_fragile_internals)) {
-    results.push({ display_name: 'Fragile Internals', description: FRAGILE_INTERNALS });
+    results.push(FRAGILE_INTERNALS);
   }
 
   return results;

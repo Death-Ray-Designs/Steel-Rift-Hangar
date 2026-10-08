@@ -10,7 +10,7 @@ import { clickedBoxValue } from '../../../../store/helpers/store-counters';
 import { splitHevStructureIntoCriticalChunkSizes } from '../../../../data/hev-helpers';
 import BtnPlusMinus from '../../../ArmyPlay/BtnPlusMinus.vue';
 import CardToolTip from '../CardParts/CardToolTip.vue';
-import { BACKUP_SYSTEMS, FRAGILE_INTERNALS } from '../../../../data/rules';
+import { BACKUP_SYSTEMS, FRAGILE_INTERNALS } from '../../../../data/mech-structure-systems';
 
 const mechStore = useMechStore();
 const factionStore = useFactionStore();
@@ -23,10 +23,10 @@ const info = computed(() => mechStore.getMechInfo(mechId)!);
 
 const structureSystem = computed(() => {
   if (info.value.has_fragile_internals) {
-    return { display_name: 'Fragile Internals', description: FRAGILE_INTERNALS };
+    return FRAGILE_INTERNALS;
   }
   if (info.value.has_backup_systems) {
-    return { display_name: 'Backup Systems', description: BACKUP_SYSTEMS };
+    return BACKUP_SYSTEMS;
   }
 });
 
