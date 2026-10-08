@@ -64,6 +64,19 @@ $heading-border-color: #7d8ba2;
     background-color: white;
   }
 
+  // no page break after the last page, otherwise print adds an empty extra page
+  .page-preview:last-child {
+    page-break-after: auto;
+    break-after: auto;
+  }
+
+  // a page exactly as tall as the sheet can spill by a sub-pixel and add an empty page,
+  // pages are separated by explicit page breaks so a slightly shorter box changes nothing else
+  .page-preview.page-letter {
+    height: $page-letter-height - 2pt;
+    overflow: hidden;
+  }
+
   .page-previews-container {
     margin: 0;
     padding: 0;
@@ -75,6 +88,9 @@ $heading-border-color: #7d8ba2;
 
   .app-header,
   .vite-plugin-svgs-icons-views,
+  // dev only vue devtools overlays, they add an empty extra page when printing
+  #vue-inspector-container,
+  #__vue-devtools-container__,
   .no-print {
     display: none;
   }
