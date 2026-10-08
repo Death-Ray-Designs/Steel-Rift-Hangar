@@ -1263,7 +1263,7 @@ export const useMechStore = defineScopeableStore('mech', ({ scope }: { scope: st
             const byId = new Map<MECH_ARMOR_UPGRADE, MechArmorUpgradeInfo>();
             mechs.value.forEach(mech => {
                 getMechAllArmorUpgradesInfo(mech.id).forEach(info => {
-                    if (!info.visible_on_card || !info.description) return;
+                    if (!info.visible_on_card) return;
                     byId.set(info.id, info);
                 });
             });
