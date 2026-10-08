@@ -7,11 +7,21 @@ const mechStore = useMechStore();
 const upgrades = computed(() => {
   return mechStore.getUsedUpgradesInfo;
 });
+
+const armorUpgrades = computed(() => {
+  return mechStore.getUsedArmorUpgradesInfo;
+});
 </script>
 <template>
-  <div v-if="upgrades.length">
+  <div v-if="upgrades.length || armorUpgrades.length">
     <div class="divider"></div>
     <div class="ref-heading">Upgrades</div>
+    <p v-for="item in armorUpgrades" :key="item.id" class="p-gap">
+      <span class="fw-bold">
+        {{ item.display_name }}:
+      </span>
+      {{ item.description }}
+    </p>
     <template v-for="item in upgrades">
       <p class="p-gap">
         <span class="fw-bold">

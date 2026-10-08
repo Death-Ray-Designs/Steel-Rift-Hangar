@@ -151,5 +151,6 @@ export const MECH_ARMOR_UPGRADES: Readonly<Record<MECH_ARMOR_UPGRADE, MechArmorU
         description: 'This Unit no longer has the "Fragile Internals" rule applied when damaged.',
         cost: 1,
         limited_size_ids: [SIZE.LIGHT],
+        visible_on_card: true,
     }),
 });
