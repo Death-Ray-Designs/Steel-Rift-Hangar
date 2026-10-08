@@ -1259,6 +1259,18 @@ export const useMechStore = defineScopeableStore('mech', ({ scope }: { scope: st
             return sortBy(results, ['display_name']);
         });
 
+        const getUsedArmorUpgradesInfo = computed((): MechArmorUpgradeInfo[] => {
+            const byId = new Map<MECH_ARMOR_UPGRADE, MechArmorUpgradeInfo>();
+            mechs.value.forEach(mech => {
+                getMechAllArmorUpgradesInfo(mech.id).forEach(info => {
+                    if (!info.visible_on_card) return;
+                    byId.set(info.id, info);
+                });
+            });
+
+            return sortBy([...byId.values()], ['display_name']);
+        });
+
         function _getMechArmorUpgradeSizeValidation(mechId: number, armorUpgradeId: MECH_ARMOR_UPGRADE) {
             let mech = getMech(mechId);
             if (!mech) return { valid: true, armorUpgradeDisplayName: null, validSizeDisplayNames: [] };
@@ -1352,6 +1364,7 @@ export const useMechStore = defineScopeableStore('mech', ({ scope }: { scope: st
             getUsedWeaponTraitIds,
             getUpgradeTraitsInfo,
             getUsedUpgradesInfo,
+            getUsedArmorUpgradesInfo,
             getMechAvailableArmorUpgrades,
             getMechArmorUpgradeInfo,
             getMechArmorUpgradesInfo,
