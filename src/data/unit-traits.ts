@@ -179,7 +179,7 @@ export const UNIT_TRAITS = makeTraits<UnitTraitDef>({
     },
     [UNIT_TRAIT.GUIDANCE_SUITE]: {
         display_name: 'Guidance Suite',
-        description: 'When a Unit with a Guidance Marker is the Target of an ENGAGE Order, the Unit performing the EN‑ GAGE selects one of the following effects: a. All weapons used in this ENGAGE Order count as having the benefit of a LOCK ON Order. b. One weapon used in this ENGAGE Order may have +2 added to its Damage Rating. When the ENGAGE Order is complete, remove the Guidance Marker. If the Marker has not been other‑ wise removed, remove the Marker when this Unit is activated again.',
+        description: 'When a Unit with a Guidance Marker is the Target of an ENGAGE Order, the Unit performing the ENGAGE selects one of the following effects: a. All weapons used in this ENGAGE Order count as having the benefit of a LOCK ON Order. b. One weapon used in this ENGAGE Order may have +2 added to its Damage Rating. When the ENGAGE Order is complete, remove the Guidance Marker. If the Marker has not been other‑ wise removed, remove the Marker when this Unit is activated again.',
         formatter: xFormater,
     },
     [UNIT_TRAIT.AUXILIARY_UNIT]: {
