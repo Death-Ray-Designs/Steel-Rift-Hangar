@@ -221,9 +221,10 @@ export const MECH_TEAM_PERKS = makeTeamPerks({
         visible_on_card: true,
     },
     [TEAM_PERK.GRANTED_GUIDANCE_SUITE_MOVE]: {
-        display_name: 'Granted Guidance Suite (MOVE)',
+        display_name: 'Recon Guidance Suite (MOVE)',
         description: 'Once per turn, a Medium or Heavy HE-V of this team counts as having the Guidance Suite (MOVE) trait. Declare the use of this at the beginning of that HE-V’s activation.',
         granted_unit_traits: [trait(UNIT_TRAIT.GUIDANCE_SUITE, 'MOVE')],
+        visible_on_card: true,
     },
     [TEAM_PERK.SQUEEZE]: {
         display_name: 'Squeeze',
