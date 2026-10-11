@@ -1,11 +1,14 @@
 <script setup lang="ts">
+import { BButton } from 'bootstrap-vue-next';
 import HEVCard from './ArmyPrint/ArmyPrintCards/HEVCard.vue';
+import MineDroneCard from './ArmyPrint/ArmyPrintCards/MineDroneCard.vue';
 import SupportAssetWeaponCard from './ArmyPrint/ArmyPrintCards/SupportAssetWeaponCard.vue';
 import SupportAssetUnitCard from './ArmyPrint/ArmyPrintCards/SupportAssetUnitCard.vue';
 import { computed, provide } from 'vue';
 import { type SupportAssetUnitCardType, type SupportAssetWeaponCardType, useCardStore } from '../store/card-store';
 import { MECH_TEAM, MECH_TEAMS } from '../data/mech-teams';
 import { useArmyListStore } from '../store/army-list-store';
+import { usePlayStore } from '../store/play-store';
 import BtnClearPlay from './ArmyPlay/BtnClearPlay.vue';
 import PlayLeaveModal from './ArmyPlay/PlayLeaveModal.vue';
 import BtnTogglePlusMinus from './ArmyPlay/BtnTogglePlusMinus.vue';
@@ -13,6 +16,7 @@ import BtnToggleCritReference from './ArmyPlay/BtnToggleCritReference.vue';
 
 const cardStore = useCardStore();
 const armyStore = useArmyListStore();
+const playStore = usePlayStore();
 
 const hevCardsByTeam = computed(() => {
   const mechCardsByTeam = cardStore.mech_cards_by_team;
@@ -61,6 +65,29 @@ provide('play', true);
               :key="item.mechId"
             >
               <HEVCard :mech-id="item.mechId" />
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="section-container"
+          v-if="armyStore.includes_mine_drones"
+        >
+          <h5 class="play-header">Reference</h5>
+          <div class="row gx-1 row-cols-lg-4 row-cols-md-3 row-cols-sm-2 row-cols-1">
+            <div class="col">
+              <MineDroneCard :hidden="playStore.mineDroneCardHidden">
+                <template #after-title>
+                  <BButton
+                    size="sm"
+                    :variant="playStore.mineDroneCardHidden ? 'secondary' : 'danger'"
+                    class="me-1 py-0"
+                    @click="playStore.mineDroneCardHidden = !playStore.mineDroneCardHidden"
+                  >
+                    {{ playStore.mineDroneCardHidden ? 'Show' : 'Hide' }}
+                  </BButton>
+                </template>
+              </MineDroneCard>
             </div>
           </div>
         </div>

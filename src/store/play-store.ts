@@ -2,19 +2,27 @@ import { defineScopeableStore } from 'pinia-scope';
 import { computed, reactive, ref, watch } from 'vue';
 import { useMechStore } from './mech-store';
 import { useSupportAssetUnitsStore } from './support-asset-units-store';
+import { useSupportAssetWeaponsStore } from './support-asset-weapons-store';
 import { clearObject, makeMultiKeyCounter } from './helpers/store-counters';
 import { FACTION_PERK } from '../data/faction-perks';
 import { useFactionStore } from './faction-store';
 import { splitHevStructureIntoCriticalChunkSizes } from '../data/hev-helpers';
 import type { UnitAttachmentVehicleInfo } from '../data/support-assets/_support-asset-types';
+import type { SUPPORT_ASSET_WEAPON } from '../data/support-asset-weapons';
+import { WEAPON_TRAIT } from '../data/weapon-traits';
+import { findById } from './helpers/collection-helper';
 
 export const usePlayStore = defineScopeableStore('play-store', ({ scope }: { scope: string }) => {
         const mechStore = useMechStore(scope);
         const unitStore = useSupportAssetUnitsStore(scope);
+        const supportAssetWeaponsStore = useSupportAssetWeaponsStore(scope);
         const factionStore = useFactionStore(scope);
 
         const enableBtnPlusMinus = ref(true);
         const showCritReference = ref(true);
+
+        // cosmetic only: hides the mine drone card content in play mode
+        const mineDroneCardHidden = ref(false);
 
         // cosmetic only: hides the hev card content in play mode
         const hevDestroyed: Record<string, boolean> = reactive({});
@@ -34,6 +42,27 @@ export const usePlayStore = defineScopeableStore('play-store', ({ scope }: { sco
         function pruneHevDestroyed(shouldPrune: (key: string) => boolean) {
             Object.keys(hevDestroyed).forEach(key => {
                 if (shouldPrune(key)) delete hevDestroyed[key];
+            });
+        }
+
+        // cosmetic only: hides the off table support asset card content in play mode
+        const supportAssetWeaponHidden: Record<string, boolean> = reactive({});
+
+        function isSupportAssetWeaponHidden(supportAssetId: SUPPORT_ASSET_WEAPON) {
+            return supportAssetWeaponHidden[supportAssetId] ?? false;
+        }
+
+        function setSupportAssetWeaponHidden(supportAssetId: SUPPORT_ASSET_WEAPON, hidden: boolean) {
+            if (hidden) {
+                supportAssetWeaponHidden[supportAssetId] = true;
+            } else {
+                delete supportAssetWeaponHidden[supportAssetId];
+            }
+        }
+
+        function pruneSupportAssetWeaponHidden(shouldPrune: (key: string) => boolean) {
+            Object.keys(supportAssetWeaponHidden).forEach(key => {
+                if (shouldPrune(key)) delete supportAssetWeaponHidden[key];
             });
         }
 
@@ -80,6 +109,21 @@ export const usePlayStore = defineScopeableStore('play-store', ({ scope }: { sco
         } = makeMultiKeyCounter<[number, number, number]>((unitAttachmentId, vehicleAttachmentId, weaponIndex) => {
             const vehicle = unitStore.getUnitAttachmentVehicleInfo(unitAttachmentId, vehicleAttachmentId);
             return vehicle?.weapons[weaponIndex]?.max_uses ?? 0;
+        });
+
+        const {
+            counterData: supportAssetWeaponUses,
+            add: addSupportAssetWeaponTimesUsed,
+            remove: removeSupportAssetWeaponTimesUsed,
+            get: getSupportAssetWeaponTimesUsed,
+            set: setSupportAssetWeaponTimesUsed,
+            hasValues: supportAssetHasWeaponUses,
+            clear: clearSupportAssetWeaponUses,
+            prune: pruneSupportAssetWeaponUses,
+        } = makeMultiKeyCounter<[SUPPORT_ASSET_WEAPON]>((supportAssetId) => {
+            const weapon = supportAssetWeaponsStore.getSupportAssetInfo(supportAssetId).off_table_weapon;
+            const limitedTrait = findById(weapon.traits, WEAPON_TRAIT.LIMITED);
+            return typeof limitedTrait?.X === 'number' ? limitedTrait.X : 0;
         });
 
         const {
@@ -266,6 +310,14 @@ export const usePlayStore = defineScopeableStore('play-store', ({ scope }: { sco
             return slots;
         }
 
+        function supportAssetWeaponSlots() {
+            const slots: Record<string, string> = {};
+            supportAssetWeaponsStore.support_asset_weapon_ids.forEach(id => {
+                slots[id] = '';
+            });
+            return slots;
+        }
+
         pruneOnSlotChange(hevSlots, pruneHevStructureDamage);
         pruneOnSlotChange(hevSlots, pruneHevArmorDamage);
         pruneOnSlotChange(hevSlots, pruneHevDestroyed);
@@ -280,6 +332,9 @@ export const usePlayStore = defineScopeableStore('play-store', ({ scope }: { sco
         pruneOnSlotChange(garrisonSlots, pruneGarrisonArmorDamage);
         pruneOnSlotChange(garrisonWeaponSlots, pruneGarrisonWeaponUses);
 
+        pruneOnSlotChange(supportAssetWeaponSlots, pruneSupportAssetWeaponUses);
+        pruneOnSlotChange(supportAssetWeaponSlots, pruneSupportAssetWeaponHidden);
+
         const gameStarted = computed(() => {
             return hevHasWeaponUses()
                 || hevHasUpgradeUses()
@@ -290,7 +345,8 @@ export const usePlayStore = defineScopeableStore('play-store', ({ scope }: { sco
                 || unitHasArmorDamage()
                 || garrisonHasWeaponUses()
                 || garrisonHasStructureDamage()
-                || garrisonHasArmorDamage();
+                || garrisonHasArmorDamage()
+                || supportAssetHasWeaponUses();
         });
 
 
@@ -333,7 +389,10 @@ export const usePlayStore = defineScopeableStore('play-store', ({ scope }: { sco
             clearGarrisonWeaponUses();
             clearGarrisonStructureDamage();
             clearGarrisonArmorDamage();
+            clearSupportAssetWeaponUses();
             clearObject(hevDestroyed);
+            mineDroneCardHidden.value = false;
+            clearObject(supportAssetWeaponHidden);
         }
 
         return {
@@ -344,6 +403,7 @@ export const usePlayStore = defineScopeableStore('play-store', ({ scope }: { sco
             hevWeaponUses,
             hevUpgradeUses,
             hevDestroyed,
+            mineDroneCardHidden,
 
             unitStructureDamage,
             unitArmorDamage,
@@ -352,6 +412,9 @@ export const usePlayStore = defineScopeableStore('play-store', ({ scope }: { sco
             garrisonStructureDamage,
             garrisonArmorDamage,
             garrisonWeaponUses,
+
+            supportAssetWeaponUses,
+            supportAssetWeaponHidden,
 
             gameStarted,
 
@@ -411,6 +474,14 @@ export const usePlayStore = defineScopeableStore('play-store', ({ scope }: { sco
             setGarrisonArmorDamage,
             addGarrisonArmorDamage,
             removeGarrisonArmorDamage,
+
+            isSupportAssetWeaponHidden,
+            setSupportAssetWeaponHidden,
+
+            addSupportAssetWeaponTimesUsed,
+            removeSupportAssetWeaponTimesUsed,
+            getSupportAssetWeaponTimesUsed,
+            setSupportAssetWeaponTimesUsed,
 
             getHevStructureCriticals,
         };

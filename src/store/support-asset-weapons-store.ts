@@ -77,14 +77,14 @@ export const useSupportAssetWeaponsStore = defineScopeableStore('weapon-support-
             if (factionStore.hasPerk(FACTION_PERK.DWC_OUTRAGEOUS_SUPPORT_BUDGET)) {
                 if (asset.id === outrageous_budget_perk_support_asset_id.value) {
                     assetInfo.cost = 0;
-                    if (weapon.damage ?? 0 > 0) {
+                    if ((weapon.damage ?? 0) > 0) {
                         weapon.damage_modifiers.push(-1);
                     }
 
                     weapon.traits.forEach((trait) => {
                         if (typeof trait.X === 'number') {
                             trait.X -= 1;
-                            trait.X = Math.min(1, trait.X);
+                            trait.X = Math.max(1, trait.X);
                         }
                     });
 

@@ -82,6 +82,7 @@ export const SUPPORT_ASSET_WEAPONS = makeFrozenStaticListIds<SupportAssetWeapon>
         off_table_weapon: {
             traits: [
                 trait(WEAPON_TRAIT.MINE_TOKENS, 3),
+                trait(WEAPON_TRAIT.LIMITED, 3),
             ],
         },
     },
