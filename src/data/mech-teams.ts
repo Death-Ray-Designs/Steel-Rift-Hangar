@@ -207,7 +207,7 @@ export const MECH_TEAMS: Readonly<Record<MECH_TEAM, MechTeam>> = makeFrozenStati
             ],
             4: [
                 [],
-                [TEAM_PERK._0_TON_ECM],
+                [TEAM_PERK._0_TON_ECM, TEAM_PERK._0_TON_TARGET_DESIGNATORS],
                 [TEAM_PERK.GRANTED_GUIDANCE_SUITE_MOVE],
             ],
         },
