@@ -26,6 +26,7 @@ export const LAS_WING_TRANSPORT_SQUADRON_DATA: Omit<SupportAssetUnitDef, 'id'> =
         trait(UNIT_TRAIT.FLYING),
         trait(UNIT_TRAIT.FLYING_SQUADRON),
         trait(UNIT_TRAIT.YIELDING),
+        trait(UNIT_TRAIT.VULNERABLE),
     ],
     vehicles: makeStaticListIds<SupportAssetUnitVehicleDef>({
         INFANTRY_AIR_TRANSPORT: {

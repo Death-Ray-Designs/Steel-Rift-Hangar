@@ -46,6 +46,7 @@ export const INFANTRY_OUTPOST_DATA: Omit<SupportAssetUnitDef, 'id'> = {
             garrison_unit_traits: [
                 trait(UNIT_TRAIT.SQUADRON),
                 trait(UNIT_TRAIT.ALL_TERRAIN),
+                trait(UNIT_TRAIT.VULNERABLE),
             ],
         },
     }),

@@ -25,6 +25,7 @@ export const LAS_WING_ATTACK_SQUADRON_DATA: Omit<SupportAssetUnitDef, 'id'> = {
         trait(UNIT_TRAIT.FLYING),
         trait(UNIT_TRAIT.FLYING_SQUADRON),
         trait(UNIT_TRAIT.YIELDING),
+        trait(UNIT_TRAIT.VULNERABLE),
     ],
     vehicles: makeStaticListIds<SupportAssetUnitVehicleDef>({
         STRIKE_LAS_WING: {
