@@ -32,6 +32,21 @@
 
 .play-container {
 
+  --play-auto-columns: 1;
+  --play-columns: var(--play-auto-columns);
+
+  @include media-breakpoint-up(sm) {
+    --play-auto-columns: 2;
+  }
+
+  @include media-breakpoint-up(md) {
+    --play-auto-columns: 3;
+  }
+
+  @include media-breakpoint-up(lg) {
+    --play-auto-columns: 4;
+  }
+
   background: var(--play-bg);
 
   .play-header {
@@ -61,6 +76,16 @@
         &.card-support-asset-size-2 {
           width: auto;
         }
+      }
+    }
+
+    .play-card-grid {
+      display: grid;
+      grid-template-columns: repeat(var(--play-columns), minmax(0, 1fr));
+      gap: 0 0.25rem;
+
+      > * {
+        min-width: 0;
       }
     }
 
