@@ -34,6 +34,23 @@
 
   background: var(--play-bg);
 
+  .page-army-reference.play-rules-reference {
+    padding: 1rem 0.5rem;
+    font-family: $font-outfit;
+    font-size: inherit;
+    line-height: 1.4;
+
+    h2,
+    .ref-heading {
+      font-size: 100%;
+    }
+
+    .p-gap {
+      margin-bottom: 0.5rem;
+    }
+
+  }
+
   .play-header {
     font-weight: bold;
     background: var(--play-header-bg);
