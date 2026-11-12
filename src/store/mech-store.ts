@@ -137,6 +137,8 @@ export const useMechStore = defineScopeableStore('mech', ({ scope }: { scope: st
             const mech = getMech(mechId);
             if (!mech) return;
 
+            const name = getDuplicatedMechName(mech.name);
+
             const {
                 teamId,
                 groupId,
@@ -155,6 +157,7 @@ export const useMechStore = defineScopeableStore('mech', ({ scope }: { scope: st
             } = mech;
 
             updateMech(newMechId, {
+                name,
                 structure_mod_id,
                 armor_mod_id,
                 armor_upgrade_ids,
@@ -169,6 +172,23 @@ export const useMechStore = defineScopeableStore('mech', ({ scope }: { scope: st
             upgrades.forEach(upgrade => {
                 addMechUpgradeAttachment(newMechId, upgrade.upgrade_id, upgrade.drone_attachment_target_id);
             });
+        }
+
+        function getDuplicatedMechName(name = ''): string {
+            const match = /^(.*?)([0-9]+)$/s.exec(name);
+            if (!match) return '';
+
+            const [, prefix, digits] = match;
+            const existingNames = new Set(mechs.value.map(mech => mech.name || `HE-V-${mech.id}`));
+            let number = BigInt(digits);
+            let candidate: string;
+
+            do {
+                number += 1n;
+                candidate = prefix + number.toString().padStart(digits.length, '0');
+            } while (existingNames.has(candidate));
+
+            return candidate;
         }
 
         function removeMech(mechId: number) {
