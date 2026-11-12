@@ -4,7 +4,7 @@ import HEVCard from './ArmyPrint/ArmyPrintCards/HEVCard.vue';
 import MineDroneCard from './ArmyPrint/ArmyPrintCards/MineDroneCard.vue';
 import SupportAssetWeaponCard from './ArmyPrint/ArmyPrintCards/SupportAssetWeaponCard.vue';
 import SupportAssetUnitCard from './ArmyPrint/ArmyPrintCards/SupportAssetUnitCard.vue';
-import { computed, provide } from 'vue';
+import { computed, onMounted, onUnmounted, provide, ref } from 'vue';
 import { type SupportAssetUnitCardType, type SupportAssetWeaponCardType, useCardStore } from '../store/card-store';
 import { MECH_TEAM, MECH_TEAMS } from '../data/mech-teams';
 import { useArmyListStore } from '../store/army-list-store';
@@ -17,6 +17,33 @@ import BtnToggleCritReference from './ArmyPlay/BtnToggleCritReference.vue';
 const cardStore = useCardStore();
 const armyStore = useArmyListStore();
 const playStore = usePlayStore();
+const playContainer = ref<HTMLElement | null>(null);
+const autoColumnCount = ref(1);
+const effectiveColumnCount = computed(() => playStore.columnCount ?? autoColumnCount.value);
+const columnVariant = computed(() => playStore.columnCount === null ? 'success-light' : 'danger-light');
+
+function updateAutoColumns() {
+  if (!playContainer.value) return;
+
+  autoColumnCount.value = Number(getComputedStyle(playContainer.value).getPropertyValue('--play-auto-columns'));
+  if (playStore.columnCount === autoColumnCount.value) {
+    playStore.columnCount = null;
+  }
+}
+
+function changeColumns(change: number) {
+  const current = effectiveColumnCount.value;
+  const next = Math.min(4, Math.max(1, current + change));
+  if (next === current) return;
+
+  playStore.columnCount = next === autoColumnCount.value ? null : next;
+}
+
+onMounted(() => {
+  updateAutoColumns();
+  window.addEventListener('resize', updateAutoColumns);
+});
+onUnmounted(() => window.removeEventListener('resize', updateAutoColumns));
 
 const hevCardsByTeam = computed(() => {
   const mechCardsByTeam = cardStore.mech_cards_by_team;
@@ -39,7 +66,11 @@ const supportAssetCards = computed((): (SupportAssetUnitCardType | SupportAssetW
 provide('play', true);
 </script>
 <template>
-  <div class="page-previews-container play-container">
+  <div
+    ref="playContainer"
+    class="page-previews-container play-container"
+    :style="{ '--play-columns': playStore.columnCount ?? undefined }"
+  >
     <div class="output-container">
       <div class="container-fluid gx-0">
         <div class="mb-2">
@@ -47,6 +78,35 @@ provide('play', true);
           <PlayLeaveModal />
           <BtnTogglePlusMinus />
           <BtnToggleCritReference class="ms-1" />
+          <div class="btn-group ms-1" role="group" aria-label="Play columns">
+            <BButton
+              size="sm"
+              :variant="columnVariant"
+              :aria-pressed="playStore.columnCount === null"
+              @click="playStore.columnCount = null"
+            >
+              <span class="material-symbols-outlined">{{ playStore.columnCount === null ? 'check' : 'close' }}</span>
+              Columns Auto
+            </BButton>
+            <BButton
+              size="sm"
+              :variant="effectiveColumnCount === 1 ? 'secondary' : columnVariant"
+              aria-label="Fewer columns"
+              :disabled="effectiveColumnCount === 1"
+              @click="changeColumns(-1)"
+            >
+              <span class="material-symbols-outlined">remove</span>
+            </BButton>
+            <BButton
+              size="sm"
+              :variant="effectiveColumnCount === 4 ? 'secondary' : columnVariant"
+              aria-label="More columns"
+              :disabled="effectiveColumnCount === 4"
+              @click="changeColumns(1)"
+            >
+              <span class="material-symbols-outlined">add</span>
+            </BButton>
+          </div>
         </div>
 
         <h4 class="px-3">{{ armyStore.name || 'Unnamed Army List' }}</h4>
@@ -58,9 +118,8 @@ provide('play', true);
         >
           <h5 class="play-header">{{ team.teamName }}</h5>
 
-          <div class="row gx-1 row-cols-lg-4 row-cols-md-3 row-cols-sm-2 row-cols-1">
+          <div class="play-card-grid">
             <div
-              class="col"
               v-for="item in team.cards"
               :key="item.mechId"
             >
@@ -74,8 +133,8 @@ provide('play', true);
           v-if="armyStore.includes_mine_drones"
         >
           <h5 class="play-header">Reference</h5>
-          <div class="row gx-1 row-cols-lg-4 row-cols-md-3 row-cols-sm-2 row-cols-1">
-            <div class="col">
+          <div class="play-card-grid">
+            <div>
               <MineDroneCard :hidden="playStore.mineDroneCardHidden">
                 <template #after-title>
                   <BButton
