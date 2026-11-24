@@ -125,3 +125,7 @@ export function trait<ID extends string = string>(id: ID, X?: number | string | 
 export function traitDisplayNames(traits: Trait<any>[]): string {
     return traits.map((trait) => weaponTraitDisplayName(trait)).join(', ');
 }
+
+export function clamp(val: number, min: number, max: number) {
+    return Math.min(max, Math.max(min, val));
+}

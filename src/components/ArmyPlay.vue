@@ -4,7 +4,7 @@ import HEVCard from './ArmyPrint/ArmyPrintCards/HEVCard.vue';
 import MineDroneCard from './ArmyPrint/ArmyPrintCards/MineDroneCard.vue';
 import SupportAssetWeaponCard from './ArmyPrint/ArmyPrintCards/SupportAssetWeaponCard.vue';
 import SupportAssetUnitCard from './ArmyPrint/ArmyPrintCards/SupportAssetUnitCard.vue';
-import { computed, onMounted, onUnmounted, provide, ref } from 'vue';
+import { computed, provide } from 'vue';
 import { type SupportAssetUnitCardType, type SupportAssetWeaponCardType, useCardStore } from '../store/card-store';
 import { MECH_TEAM, MECH_TEAMS } from '../data/mech-teams';
 import { useArmyListStore } from '../store/army-list-store';
@@ -14,37 +14,51 @@ import PlayLeaveModal from './ArmyPlay/PlayLeaveModal.vue';
 import BtnTogglePlusMinus from './ArmyPlay/BtnTogglePlusMinus.vue';
 import BtnToggleCritReference from './ArmyPlay/BtnToggleCritReference.vue';
 import PlayRulesReference from './ArmyPlay/PlayRulesReference.vue';
+import { type BootstrapBreakpoint, useBootstrapBreakpoints } from '../composables/bootstrap-helpers';
+import { clamp } from '../data/data-helpers';
 
 const cardStore = useCardStore();
 const armyStore = useArmyListStore();
 const playStore = usePlayStore();
-const playContainer = ref<HTMLElement | null>(null);
-const autoColumnCount = ref(1);
-const effectiveColumnCount = computed(() => playStore.columnCount ?? autoColumnCount.value);
-const columnVariant = computed(() => playStore.columnCount === null ? 'success-light' : 'danger-light');
 
-function updateAutoColumns() {
-  if (!playContainer.value) return;
+const MIN_COLUMNS = 1;
+const BREAK_POINT_COLUMNS: Record<BootstrapBreakpoint, { auto: number; max: number }> = {
+  xs: { auto: 1, max: 1 },
+  sm: { auto: 2, max: 3 },
+  md: { auto: 3, max: 4 },
+  lg: { auto: 4, max: 5 },
+  xl: { auto: 4, max: 5 },
+  xxl: { auto: 4, max: 5 },
+};
 
-  autoColumnCount.value = Number(getComputedStyle(playContainer.value).getPropertyValue('--play-auto-columns'));
-  if (playStore.columnCount === autoColumnCount.value) {
-    playStore.columnCount = null;
+const breakpoint = useBootstrapBreakpoints();
+
+const autoColumnCount = computed(() => BREAK_POINT_COLUMNS[breakpoint.value].auto);
+const maxColumnCount = computed(() => BREAK_POINT_COLUMNS[breakpoint.value].max);
+const canChangeColumns = computed(() => maxColumnCount.value > MIN_COLUMNS);
+const effectiveColumnCount = computed(() => {
+  if (playStore.columnCount === null) {
+    return autoColumnCount.value;
   }
-}
+
+  return clamp(playStore.columnCount, MIN_COLUMNS, maxColumnCount.value);
+});
+
+// a saved manual count that works out to the auto count at this breakpoint displays as auto (the saved preference is kept)
+const isManualColumns = computed(() => playStore.columnCount !== null && effectiveColumnCount.value !== autoColumnCount.value);
+const columnVariant = computed(() => isManualColumns.value ? 'danger-light' : 'success-light');
 
 function changeColumns(change: number) {
   const current = effectiveColumnCount.value;
-  const next = Math.min(4, Math.max(1, current + change));
+  const next = clamp(current + change, MIN_COLUMNS, maxColumnCount.value);
   if (next === current) return;
 
-  playStore.columnCount = next === autoColumnCount.value ? null : next;
+  if (next === autoColumnCount.value) {
+    playStore.columnCount = null;
+  } else {
+    playStore.columnCount = next;
+  }
 }
-
-onMounted(() => {
-  updateAutoColumns();
-  window.addEventListener('resize', updateAutoColumns);
-});
-onUnmounted(() => window.removeEventListener('resize', updateAutoColumns));
 
 const hevCardsByTeam = computed(() => {
   const mechCardsByTeam = cardStore.mech_cards_by_team;
@@ -68,41 +82,51 @@ provide('play', true);
 </script>
 <template>
   <div
-    ref="playContainer"
     class="page-previews-container play-container"
-    :style="{ '--play-columns': playStore.columnCount ?? undefined }"
+    :style="{ '--play-columns': effectiveColumnCount }"
   >
     <div class="output-container">
       <div class="container-fluid gx-0">
-        <div class="mb-2">
+        <div class="d-flex flex-wrap align-items-center gap-1 px-3 mb-2">
           <BtnClearPlay />
           <PlayLeaveModal />
           <BtnTogglePlusMinus />
-          <BtnToggleCritReference class="ms-1" />
-          <div class="btn-group ms-1" role="group" aria-label="Play columns">
+          <BtnToggleCritReference />
+          <div
+            v-if="canChangeColumns"
+            class="btn-group"
+            role="group"
+            aria-label="Play columns"
+          >
             <BButton
               size="sm"
               :variant="columnVariant"
-              :aria-pressed="playStore.columnCount === null"
+              :aria-pressed="!isManualColumns"
+              :title="isManualColumns ? 'Reset columns to auto' : 'Columns follow screen width'"
               @click="playStore.columnCount = null"
             >
-              <span class="material-symbols-outlined">{{ playStore.columnCount === null ? 'check' : 'close' }}</span>
-              Columns Auto
+              <span class="material-symbols-outlined">{{ isManualColumns ? 'restart_alt' : 'check' }}</span>
+              <template v-if="!isManualColumns">
+                Columns Auto: {{ effectiveColumnCount }}
+              </template>
+              <template v-else>
+                Columns: {{ effectiveColumnCount }}
+              </template>
             </BButton>
             <BButton
               size="sm"
-              :variant="effectiveColumnCount === 1 ? 'secondary' : columnVariant"
+              variant="secondary"
               aria-label="Fewer columns"
-              :disabled="effectiveColumnCount === 1"
+              :disabled="effectiveColumnCount === MIN_COLUMNS"
               @click="changeColumns(-1)"
             >
               <span class="material-symbols-outlined">remove</span>
             </BButton>
             <BButton
               size="sm"
-              :variant="effectiveColumnCount === 4 ? 'secondary' : columnVariant"
+              variant="secondary"
               aria-label="More columns"
-              :disabled="effectiveColumnCount === 4"
+              :disabled="effectiveColumnCount === maxColumnCount"
               @click="changeColumns(1)"
             >
               <span class="material-symbols-outlined">add</span>

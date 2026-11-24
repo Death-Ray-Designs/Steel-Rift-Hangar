@@ -31,21 +31,8 @@
 
 
 .play-container {
-
-  --play-auto-columns: 1;
-  --play-columns: var(--play-auto-columns);
-
-  @include media-breakpoint-up(sm) {
-    --play-auto-columns: 2;
-  }
-
-  @include media-breakpoint-up(md) {
-    --play-auto-columns: 3;
-  }
-
-  @include media-breakpoint-up(lg) {
-    --play-auto-columns: 4;
-  }
+  // set inline by ArmyPlay.vue
+  --play-columns: 1;
 
   background: var(--play-bg);
 
