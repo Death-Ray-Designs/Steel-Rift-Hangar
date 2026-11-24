@@ -629,6 +629,7 @@ export const useTeamStore = defineScopeableStore('team', ({ scope }: { scope: st
                 structure_mod_id,
                 armor_mod_id,
                 armor_upgrade_ids,
+                aux_armor_upgrade_id,
                 mobility_id,
                 preferred_team_id,
                 name,
@@ -642,6 +643,7 @@ export const useTeamStore = defineScopeableStore('team', ({ scope }: { scope: st
                 structure_mod_id,
                 armor_mod_id,
                 armor_upgrade_ids,
+                aux_armor_upgrade_id,
                 mobility_id,
                 preferred_team_id,
                 name,
@@ -716,11 +718,10 @@ export const useTeamStore = defineScopeableStore('team', ({ scope }: { scope: st
             const group = findGroup(teamId, groupId);
             if (group) {
                 const index = group.mechs.findIndex(mech => mech.mech_id === mechId);
-                group.mechs.splice(index, 1);
+                if (index !== -1) {
+                    group.mechs.splice(index, 1);
+                }
             }
-            getTeamMechIds(teamId).forEach(mechId => {
-                mechStore.removeInvalidArmorUpgrades(mechId);
-            });
         }
 
         function removeTeam(teamId: MECH_TEAM) {
