@@ -20,6 +20,7 @@ export const usePlayStore = defineScopeableStore('play-store', ({ scope }: { sco
 
         const enableBtnPlusMinus = ref(true);
         const showCritReference = ref(true);
+        const showRulesReference = ref(false);
 
         // cosmetic only: hides the mine drone card content in play mode
         const mineDroneCardHidden = ref(false);
@@ -420,6 +421,7 @@ export const usePlayStore = defineScopeableStore('play-store', ({ scope }: { sco
 
             enableBtnPlusMinus,
             showCritReference,
+            showRulesReference,
 
             isHevDestroyed,
             setHevDestroyed,
