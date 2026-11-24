@@ -31,6 +31,8 @@
 
 
 .play-container {
+  // set inline by ArmyPlay.vue
+  --play-columns: 1;
 
   background: var(--play-bg);
 
@@ -85,6 +87,16 @@
         &.card-support-asset-size-2 {
           width: auto;
         }
+      }
+    }
+
+    .play-card-grid {
+      display: grid;
+      grid-template-columns: repeat(var(--play-columns), minmax(0, 1fr));
+      gap: 0 0.25rem;
+
+      > * {
+        min-width: 0;
       }
     }
 

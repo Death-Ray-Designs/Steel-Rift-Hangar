@@ -12,7 +12,6 @@ const resetModal = ref(false);
     @click="resetModal = !resetModal"
     size="sm"
     variant="danger"
-    class="mx-3"
   >
     Clear
   </BButton>
