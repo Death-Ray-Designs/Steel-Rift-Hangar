@@ -122,6 +122,7 @@ export const useMechStore = defineScopeableStore('mech', ({ scope }: { scope: st
                 'structure_mod_id',
                 'armor_mod_id',
                 'armor_upgrade_ids',
+                'aux_armor_upgrade_id',
                 'mobility_id',
                 'preferred_team_id',
             ]);
@@ -148,6 +149,7 @@ export const useMechStore = defineScopeableStore('mech', ({ scope }: { scope: st
                 structure_mod_id,
                 armor_mod_id,
                 armor_upgrade_ids,
+                aux_armor_upgrade_id,
                 mobility_id,
                 size_id,
                 weapons,
@@ -157,7 +159,8 @@ export const useMechStore = defineScopeableStore('mech', ({ scope }: { scope: st
             updateMech(newMechId, {
                 structure_mod_id,
                 armor_mod_id,
-                armor_upgrade_ids,
+                armor_upgrade_ids: [...armor_upgrade_ids],
+                aux_armor_upgrade_id,
                 mobility_id,
                 size_id,
             });
@@ -325,9 +328,16 @@ export const useMechStore = defineScopeableStore('mech', ({ scope }: { scope: st
                     mech.armor_upgrade_ids = [mech.armor_upgrade_ids[0]];
                 }
             }
-            if (!teamStore.getMechHasTeamPerkId(mechId, TEAM_PERK.AUX_DEFENSE_CONFIG)) {
-                mech.aux_armor_upgrade_id = MECH_ARMOR_UPGRADE.NO_ARMOR_UPGRADE;
-            }
+        }
+
+        function getMechActiveAuxArmorUpgradeId(mechId: number): MECH_ARMOR_UPGRADE | null {
+            const mech = getMech(mechId);
+            if (!mech) return null;
+            const auxId = mech.aux_armor_upgrade_id;
+            if (!auxId || auxId === MECH_ARMOR_UPGRADE.NO_ARMOR_UPGRADE) return null;
+            if (!teamStore.getMechHasTeamPerkId(mechId, TEAM_PERK.AUX_DEFENSE_CONFIG)) return null;
+
+            return auxId;
         }
 
         function setMechVisible(mechId: number, visible: boolean) {
@@ -370,12 +380,13 @@ export const useMechStore = defineScopeableStore('mech', ({ scope }: { scope: st
                 structure_mod_id,
                 armor_mod_id,
                 armor_upgrade_ids,
-                aux_armor_upgrade_id,
                 mobility_id,
                 weapons,
                 upgrades,
                 preferred_team_id,
             } = mech;
+
+            const aux_armor_upgrade_id = getMechActiveAuxArmorUpgradeId(mechId);
 
             const placeholder_name = ('HE-V-' + mechId).padStart(1);
 
@@ -1067,11 +1078,10 @@ export const useMechStore = defineScopeableStore('mech', ({ scope }: { scope: st
         }
 
         function getMechAuxArmorUpgradeInfo(mechId: number): null | MechArmorUpgradeInfo {
-            let mech = getMech(mechId);
-            if (!mech) return null;
-            if (!mech.aux_armor_upgrade_id) return null;
+            const auxId = getMechActiveAuxArmorUpgradeId(mechId);
+            if (!auxId) return null;
 
-            return getMechArmorUpgradeInfo(mechId, mech.aux_armor_upgrade_id);
+            return getMechArmorUpgradeInfo(mechId, auxId);
         }
 
         function getMechArmorUpgradeInfo(mechId: number, armorUpgradeId: MECH_ARMOR_UPGRADE, simulateAuxPerk: true | null = null): null | MechArmorUpgradeInfo {
@@ -1105,6 +1115,17 @@ export const useMechStore = defineScopeableStore('mech', ({ scope }: { scope: st
             if (!armorSizeValid) {
                 valid = false;
                 validation_message = `Only available to HE-V size(s): ${validSizeDisplayNames.join('/')}`;
+            }
+
+            // each armor upgrade may only be equipped once across all slots (including an active aux slot).
+            // a hidden aux upgrade can collide with a primary slot once the Aux. Defense Config perk returns
+            if (armorUpgradeId !== MECH_ARMOR_UPGRADE.NO_ARMOR_UPGRADE) {
+                const equippedIds = [...mech.armor_upgrade_ids, getMechActiveAuxArmorUpgradeId(mechId)];
+                if (equippedIds.filter(id => id === armorUpgradeId).length > 1) {
+                    valid = false;
+                    const duplicateMessage = `${display_name} may only be equipped once`;
+                    validation_message = validation_message ? `${validation_message}. ${duplicateMessage}` : duplicateMessage;
+                }
             }
 
             const perks = teamStore.getTeamPerksInfoByMech(mechId);
@@ -1178,7 +1199,7 @@ export const useMechStore = defineScopeableStore('mech', ({ scope }: { scope: st
                 // never display armor upgrades a mech already has
                 .filter((armorUpgradeId) => {
                     if (armorUpgradeId === MECH_ARMOR_UPGRADE.NO_ARMOR_UPGRADE) return true;
-                    return !mech.armor_upgrade_ids.includes(armorUpgradeId) && mech.aux_armor_upgrade_id !== armorUpgradeId;
+                    return !mech.armor_upgrade_ids.includes(armorUpgradeId) && getMechActiveAuxArmorUpgradeId(mechId) !== armorUpgradeId;
                 })
                 .map(armorUpgradeId => getMechArmorUpgradeInfo(mechId, armorUpgradeId, auxPerk))
                 .filter(v => !!v);
@@ -1369,6 +1390,7 @@ export const useMechStore = defineScopeableStore('mech', ({ scope }: { scope: st
             getMechArmorUpgradeInfo,
             getMechArmorUpgradesInfo,
             getMechAuxArmorUpgradeInfo,
+            getMechActiveAuxArmorUpgradeId,
             getMechAllArmorUpgradesInfo,
             getMechAvailableUpgradesInfo,
             getUpgradeInfo,

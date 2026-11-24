@@ -13,6 +13,7 @@ import BtnClearPlay from './ArmyPlay/BtnClearPlay.vue';
 import PlayLeaveModal from './ArmyPlay/PlayLeaveModal.vue';
 import BtnTogglePlusMinus from './ArmyPlay/BtnTogglePlusMinus.vue';
 import BtnToggleCritReference from './ArmyPlay/BtnToggleCritReference.vue';
+import PlayRulesReference from './ArmyPlay/PlayRulesReference.vue';
 
 const cardStore = useCardStore();
 const armyStore = useArmyListStore();
@@ -171,6 +172,7 @@ provide('play', true);
             </template>
           </div>
         </div>
+        <PlayRulesReference />
       </div>
     </div>
   </div>

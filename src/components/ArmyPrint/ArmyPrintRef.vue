@@ -1,13 +1,6 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted } from 'vue';
-import ArmyPrintRefFaction from './ArmyPrintRef/ArmyPrintRefFaction.vue';
-import ArmyPrintRefHeader from './ArmyPrintRef/ArmyPrintRefHeader.vue';
-import ArmyPrintRefSecondaryAgendas from './ArmyPrintRef/ArmyPrintRefSecondaryAgendas.vue';
-import ArmyPrintRefSpecialOrders from './ArmyPrintRef/ArmyPrintRefSpecialOrders.vue';
-import ArmyPrintRefStructureSystems from './ArmyPrintRef/ArmyPrintRefStructureSystems.vue';
-import ArmyPrintRefTeams from './ArmyPrintRef/ArmyPrintRefTeams.vue';
-import ArmyPrintRefTraits from './ArmyPrintRef/ArmyPrintRefTraits.vue';
-import ArmyPrintRefUpgrades from './ArmyPrintRef/ArmyPrintRefUpgrades.vue';
+import ArmyPrintRefContent from './ArmyPrintRefContent.vue';
 
 let style: HTMLStyleElement;
 
@@ -49,18 +42,7 @@ onUnmounted(() => {
 
   <div class="page-preview page-letter-width"
        style="background-color:white">
-    <div class="page-army-reference">
-
-      <ArmyPrintRefHeader />
-      <ArmyPrintRefFaction />
-      <ArmyPrintRefTeams />
-      <ArmyPrintRefSecondaryAgendas />
-      <ArmyPrintRefUpgrades />
-      <ArmyPrintRefStructureSystems />
-      <ArmyPrintRefSpecialOrders />
-      <ArmyPrintRefTraits />
-
-    </div>
+    <ArmyPrintRefContent />
   </div>
 
 </template>

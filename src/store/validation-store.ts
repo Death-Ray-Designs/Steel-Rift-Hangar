@@ -273,7 +273,10 @@ export const useValidationStore = defineScopeableStore('validation', ({ scope }:
         const mech = mechStore.getMech(mechId);
         if (!mech) return [];
 
-        return mechStore.getMechAllArmorUpgradesInfo(mechId).filter(v => !v.valid).map(v => v.validation_message);
+        const armorUpgrades = mechStore.getMechAllArmorUpgradesInfo(mechId);
+        const messages = armorUpgrades.filter(v => !v.valid).map(v => v.validation_message);
+
+        return [...new Set(messages)];
     }
 
     function getTeamGroupSizeValidation(teamId: MECH_TEAM, groupId: string) {
@@ -446,7 +449,7 @@ export const useValidationStore = defineScopeableStore('validation', ({ scope }:
         const groupDef = teamStore.getTeamGroupDef(teamId, groupId);
         const validIds = groupDef.required_at_least_one_of_armor_upgrade_ids;
         const mech = mechStore.getMech(mechId)!;
-        const mechArmorUpgradeIds = [mech.armor_upgrade_ids, mech.aux_armor_upgrade_id];
+        const mechArmorUpgradeIds = [...mech.armor_upgrade_ids, mechStore.getMechActiveAuxArmorUpgradeId(mechId)];
 
         if (validIds?.length) {
             const hasOne = validIds.some(validId => {
@@ -479,7 +482,7 @@ export const useValidationStore = defineScopeableStore('validation', ({ scope }:
         const groupDef = teamStore.getTeamGroupDef(teamId, groupId);
         const validIds = groupDef.required_at_least_one_of_armor_upgrade_ids;
         const mech = mechStore.getMech(mechId)!;
-        const mechArmorUpgradeIds = [...mech.armor_upgrade_ids, mech.aux_armor_upgrade_id];
+        const mechArmorUpgradeIds = [...mech.armor_upgrade_ids, mechStore.getMechActiveAuxArmorUpgradeId(mechId)];
 
         if (validIds?.length) {
             const hasOne = validIds.some(validId => {
