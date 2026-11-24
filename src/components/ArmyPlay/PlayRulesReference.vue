@@ -10,8 +10,6 @@ const playStore = usePlayStore();
     <h5 class="play-header d-flex align-items-center justify-content-between">
       <span>Rules Reference</span>
       <BButton
-        size="sm"
-        class="py-0"
         :variant="playStore.showRulesReference ? 'danger' : 'secondary'"
         :aria-expanded="playStore.showRulesReference"
         :aria-label="playStore.showRulesReference ? 'Hide rules reference' : 'Show rules reference'"
